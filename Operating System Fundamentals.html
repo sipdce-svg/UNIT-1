@@ -1,0 +1,1523 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Operating System Fundamentals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout concept: a classroom module. Sticky top bar with controls, a chapter drawer on the left,
+   one chapter at a time in the main column, big SVG figures sized for a projector. */
+:root{
+  --bg:#f4f7fb; --surface:#ffffff; --surface2:#eaf0f8; --fg:#13203a; --muted:#44546f; --line:#cfd9e8;
+  --accent:#0a5ea8; --accent-ink:#ffffff; --accent-soft:#dcebfa; --good:#1f7a3a; --bad:#b3263e; --warn:#a85d00;
+  --h1:#1d6fd8; --h1s:#dbe9fb; --h2:#0e8f83; --h2s:#d3f0ec; --h3:#c77a00; --h3s:#fdecc8;
+  --h4:#c63a58; --h4s:#fbdde4; --h5:#6c4bc4; --h5s:#e6defa; --h6:#3a8f2f; --h6s:#dcf1d6;
+  --shadow:0 1px 2px rgba(19,32,58,.08),0 6px 18px rgba(19,32,58,.06);
+  --f-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --f-body:'Source Sans 3','Segoe UI',system-ui,-apple-system,sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+  --fs:1; --hh:3.6rem;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d1524; --surface:#152238; --surface2:#1c2d49; --fg:#e8eef8; --muted:#a8b6cd; --line:#2c3d5c;
+    --accent:#6db3ff; --accent-ink:#06182e; --accent-soft:#1c3a5e; --good:#6fd188; --bad:#ff8aa0; --warn:#f0b04a;
+    --h1:#5aa2ff; --h1s:#1b3354; --h2:#3cc6b8; --h2s:#123c3a; --h3:#f0b04a; --h3s:#43320f;
+    --h4:#ff7b98; --h4s:#44202c; --h5:#a58cf0; --h5s:#2f2655; --h6:#7fd16f; --h6s:#1f3a1b;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.25); color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d1524; --surface:#152238; --surface2:#1c2d49; --fg:#e8eef8; --muted:#a8b6cd; --line:#2c3d5c;
+  --accent:#6db3ff; --accent-ink:#06182e; --accent-soft:#1c3a5e; --good:#6fd188; --bad:#ff8aa0; --warn:#f0b04a;
+  --h1:#5aa2ff; --h1s:#1b3354; --h2:#3cc6b8; --h2s:#123c3a; --h3:#f0b04a; --h3s:#43320f;
+  --h4:#ff7b98; --h4s:#44202c; --h5:#a58cf0; --h5s:#2f2655; --h6:#7fd16f; --h6s:#1f3a1b;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.25); color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{font-size:calc(16px * var(--fs));scroll-behavior:smooth;scroll-padding-top:calc(var(--hh) + 1rem)}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:1rem;line-height:1.6;margin:0}
+h1,h2,h3,h4{font-family:var(--f-display);line-height:1.2;text-wrap:balance;margin:0}
+p{margin:0 0 .8em}
+a{color:var(--accent)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+code,kbd,pre{font-family:var(--f-mono);font-size:.9em}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* top bar */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;height:var(--hh);display:flex;align-items:center;gap:.7rem;padding-inline:16px;background:var(--surface);border-bottom:1px solid var(--line)}
+.brand{font-family:var(--f-display);font-weight:800;font-size:1.1rem;white-space:nowrap}
+.brand small{display:block;font-family:var(--f-body);font-weight:600;font-size:.7rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.iconbtn{display:inline-flex;align-items:center;justify-content:center;min-width:2.4rem;height:2.4rem;padding:0 .5rem;border:1px solid var(--line);background:var(--surface);border-radius:.6rem;font-weight:700}
+.iconbtn:hover{background:var(--accent-soft)}
+#menuBtn{display:none}
+.search{position:relative;flex:1;max-width:28rem;min-width:0;margin-left:auto}
+.search input{width:100%;height:2.4rem;border:1px solid var(--line);border-radius:.6rem;padding:0 .8rem;background:var(--bg);color:var(--fg);font:inherit}
+#results{position:absolute;top:2.9rem;left:0;right:0;max-height:70vh;overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:.7rem;box-shadow:var(--shadow);padding:.3rem;z-index:50}
+#results button{display:block;width:100%;text-align:left;background:none;border:0;padding:.55rem .7rem;border-radius:.5rem}
+#results button:hover,#results button:focus-visible{background:var(--accent-soft)}
+#results b{display:block;font-family:var(--f-display)}
+#results span{font-size:.85rem;color:var(--muted)}
+.ctl{display:flex;gap:.4rem}
+.pbar{position:absolute;left:0;right:0;bottom:-1px;height:4px;background:var(--line)}
+.pbar i{display:block;height:100%;width:0;background:var(--h2);transition:width .5s}
+
+/* layout */
+.layout{display:grid;grid-template-columns:17rem minmax(0,1fr);gap:1.5rem;padding-inline:16px;max-width:90rem;margin:0 auto;align-items:start}
+#side{position:sticky;top:calc(var(--hh) + env(safe-area-inset-top,0px) + .8rem);max-height:calc(100dvh - var(--hh) - 2rem);overflow:auto;padding-block:1rem;margin-top:.8rem}
+.side-h{font-size:.8rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem}
+.ptxt{display:block;font-size:.95rem;letter-spacing:0;text-transform:none;color:var(--fg);margin-top:.15rem}
+#toc{list-style:none;margin:0;padding:0;display:grid;gap:.15rem}
+#toc button{width:100%;display:flex;align-items:center;gap:.6rem;text-align:left;border:0;background:none;padding:.5rem .6rem;border-radius:.6rem;font-size:.95rem;line-height:1.25}
+#toc button:hover{background:var(--surface2)}
+#toc button[aria-current="page"]{background:var(--accent);color:var(--accent-ink);font-weight:700}
+#toc .n{flex:none;width:1.7rem;height:1.7rem;display:grid;place-items:center;border-radius:50%;border:1.5px solid var(--line);font-size:.78rem;font-weight:700;font-variant-numeric:tabular-nums}
+#toc .seen .n{background:var(--h6s);border-color:var(--h6);color:var(--fg)}
+#toc [aria-current="page"] .n{border-color:currentColor;background:transparent}
+#scrim{display:none}
+main{min-width:0;padding-block:1.4rem 3rem}
+main:focus,main:focus-visible{outline:none}
+.chapter{animation:rise .45s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.ch-head{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.6rem}
+.eyebrow{font-size:.8rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--accent)}
+.ch-head h1{font-size:clamp(1.9rem,4vw,2.9rem);font-weight:800}
+.ch-head p{font-size:1.15rem;color:var(--muted);max-width:52rem;margin:0}
+h2.sec{font-size:clamp(1.4rem,2.6vw,1.9rem);font-weight:700;margin:2.4rem 0 1rem}
+h3{font-size:1.3rem;font-weight:700}
+
+/* generic components */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:1rem;padding:1.2rem 1.3rem;box-shadow:var(--shadow);min-width:0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr));gap:1rem}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));gap:1rem}
+.stack{display:grid;gap:1rem}
+.callout{border-radius:.9rem;padding:.9rem 1.1rem;background:var(--accent-soft);min-width:0}
+.callout .lab,.lab{display:block;font-size:.75rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);margin-bottom:.25rem}
+.callout p:last-child{margin-bottom:0}
+.callout.real{background:var(--h3s)}.callout.real .lab{color:var(--warn)}
+.callout.comp{background:var(--h2s)}.callout.comp .lab{color:var(--h2)}
+.callout.exam{background:var(--h5s)}.callout.exam .lab{color:var(--h5)}
+.callout.warn{background:var(--h4s)}.callout.warn .lab{color:var(--h4)}
+.callout.analogy{background:var(--h3s)}
+ul.tick,ul.cross,ul.pts{margin:.2rem 0 0;padding:0;list-style:none;display:grid;gap:.35rem}
+ul.tick li,ul.cross li,ul.pts li{position:relative;padding-left:1.5rem}
+ul.tick li::before{content:"✓";position:absolute;left:0;color:var(--good);font-weight:800}
+ul.cross li::before{content:"✗";position:absolute;left:0;color:var(--bad);font-weight:800}
+ul.pts li::before{content:"";position:absolute;left:.25rem;top:.62em;width:.5rem;height:.5rem;border-radius:50%;background:var(--accent)}
+.chip{display:inline-block;padding:.12rem .6rem;border-radius:2rem;background:var(--surface2);font-size:.82rem;font-weight:600;border:1px solid var(--line)}
+.ico{flex:none;vertical-align:-.2em}
+details{border:1px solid var(--line);border-radius:.8rem;background:var(--surface);margin-block:.6rem;overflow:hidden}
+summary{cursor:pointer;padding:.75rem 1rem;font-weight:700;list-style:none;display:flex;align-items:center;gap:.6rem}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"+";display:grid;place-items:center;width:1.4rem;height:1.4rem;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-weight:800;flex:none;transition:transform .2s}
+details[open]>summary::before{content:"–"}
+details[open]>summary{border-bottom:1px solid var(--line);background:var(--surface2)}
+details>div.dbody{padding:1rem 1.1rem}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:.9rem;background:var(--surface);box-shadow:var(--shadow)}
+table.cmp{border-collapse:collapse;width:100%;min-width:34rem}
+table.cmp th,table.cmp td{padding:.65rem .8rem;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+table.cmp thead th{background:var(--surface2);font-family:var(--f-display);position:sticky;top:0}
+table.cmp tbody th{font-weight:700;background:color-mix(in srgb,var(--surface2) 50%,var(--surface));white-space:nowrap}
+table.cmp tbody tr:hover td{background:var(--accent-soft)}
+table.cmp tr:last-child td,table.cmp tr:last-child th{border-bottom:0}
+.dots{display:inline-flex;gap:.2rem;vertical-align:middle;margin-right:.4rem}
+.dots i{width:.7rem;height:.7rem;border-radius:50%;background:var(--line);display:block}
+.dots i.on{background:var(--h2)}
+.dots.low i.on{background:var(--h4)}
+.btn{border:0;border-radius:.7rem;background:var(--accent);color:var(--accent-ink);padding:.6rem 1.1rem;font-weight:700}
+.btn:hover{filter:brightness(1.1)}
+.btn.ghost{background:var(--surface);color:var(--fg);border:1px solid var(--line)}
+.btn.ghost:hover{background:var(--accent-soft)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center}
+
+/* figures and svg */
+.fig{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:1rem;padding:.8rem;box-shadow:var(--shadow);min-width:0;overflow-x:auto}
+.fig svg{display:block;width:100%;height:auto;min-width:36rem;margin-inline:auto}
+.fig.narrow svg{max-width:34rem}
+.fig figcaption{font-size:.9rem;color:var(--muted);text-align:center;margin-top:.4rem}
+svg text{fill:var(--fg);font-family:var(--f-body);font-size:15px}
+svg .bold,svg .bx text{font-weight:700}
+svg .sm{font-size:12.5px;font-weight:600}
+svg .mut{fill:var(--muted)}
+svg .ttl{font-family:var(--f-display);font-size:18px;font-weight:700}
+.bx rect,.bx circle,.bx ellipse{stroke-width:2;transition:stroke-width .15s,filter .15s}
+.b1 rect,.b1 circle,.b1 ellipse{fill:var(--h1s);stroke:var(--h1)}
+.b2 rect,.b2 circle,.b2 ellipse{fill:var(--h2s);stroke:var(--h2)}
+.b3 rect,.b3 circle,.b3 ellipse{fill:var(--h3s);stroke:var(--h3)}
+.b4 rect,.b4 circle,.b4 ellipse{fill:var(--h4s);stroke:var(--h4)}
+.b5 rect,.b5 circle,.b5 ellipse{fill:var(--h5s);stroke:var(--h5)}
+.b6 rect,.b6 circle,.b6 ellipse{fill:var(--h6s);stroke:var(--h6)}
+.b0 rect,.b0 circle,.b0 ellipse{fill:var(--surface2);stroke:var(--muted)}
+.bx.click{cursor:pointer}
+.bx.click:hover rect,.bx.click:hover circle,.bx.click:focus rect,.bx.click:focus circle{stroke-width:4}
+.bx.active rect,.bx.active circle{stroke-width:5;filter:drop-shadow(0 3px 6px rgba(0,0,0,.28))}
+.bx.dead rect{fill:var(--h4s);stroke:var(--h4);stroke-dasharray:6 4}
+.bx.dim{opacity:.35}
+.bx.lit rect{stroke-width:5;filter:drop-shadow(0 0 7px var(--h3))}
+svg .ar{stroke:var(--muted);stroke-width:2.2;fill:none}
+svg .arh{fill:var(--muted)}
+svg .ln{stroke:var(--line);stroke-width:2;fill:none}
+svg .dash{stroke-dasharray:6 5}
+.infobox{margin-top:.8rem;min-height:4.2rem}
+.infobox h4{font-size:1.1rem;margin-bottom:.2rem}
+.flow-dot{animation:none}
+
+/* tooltip */
+.tip{border-bottom:2px dotted var(--accent);cursor:help;font-weight:600}
+#tipbox{position:fixed;z-index:80;max-width:min(20rem,calc(100vw - 24px));background:var(--fg);color:var(--bg);padding:.55rem .75rem;border-radius:.6rem;font-size:.9rem;line-height:1.4;box-shadow:0 6px 24px rgba(0,0,0,.3);pointer-events:none}
+
+/* concept card (the 10-point teaching pattern) */
+.concept{display:grid;gap:1rem;margin-block:1rem}
+.concept>header{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap}
+.concept>header h3{font-size:clamp(1.4rem,2.8vw,1.9rem)}
+.badge{display:inline-grid;place-items:center;width:2.4rem;height:2.4rem;border-radius:.7rem;background:var(--accent);color:var(--accent-ink);font-family:var(--f-display);font-weight:800}
+.concept h4.lab{margin:0 0 .3rem}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:1.6rem;align-items:center;padding:1.6rem;border-radius:1.4rem;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);background-image:radial-gradient(var(--line) 1px,transparent 1.2px);background-size:22px 22px}
+.hero h1{font-size:clamp(2.2rem,6vw,4.2rem);font-weight:800;letter-spacing:-.02em;line-height:1}
+.hero h1 span{color:var(--accent)}
+.hero .kicker{font-family:var(--f-display);font-size:1.25rem;font-weight:600;margin:.8rem 0 .4rem}
+.hero .sub{font-size:1.1rem;color:var(--muted);max-width:30rem}
+.hero .cta{margin-top:1rem}
+.hero .fig{background:var(--bg)}
+
+/* chapter nav */
+.chnav{display:flex;justify-content:space-between;gap:1rem;margin-top:3rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+.chnav button{display:flex;flex-direction:column;align-items:flex-start;gap:.1rem;max-width:48%;padding:.8rem 1.1rem;border-radius:.9rem;border:1px solid var(--line);background:var(--surface);text-align:left;box-shadow:var(--shadow)}
+.chnav button:hover{background:var(--accent-soft)}
+.chnav button.next{margin-left:auto;align-items:flex-end;text-align:right;background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.chnav button.next:hover{filter:brightness(1.1)}
+.chnav small{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;opacity:.8;font-weight:700}
+.chnav b{font-family:var(--f-display);font-size:1.05rem}
+#toTop{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));width:3rem;height:3rem;border-radius:50%;border:0;background:var(--accent);color:var(--accent-ink);box-shadow:var(--shadow);font-size:1.3rem;font-weight:800;opacity:0;pointer-events:none;transform:translateY(10px);transition:.25s;z-index:45}
+#toTop.show{opacity:1;pointer-events:auto;transform:none}
+
+/* simulators */
+.sim{background:var(--surface);border:1px solid var(--line);border-radius:1rem;padding:1rem;box-shadow:var(--shadow);min-width:0}
+.sim h4{font-size:1.1rem;margin-bottom:.5rem}
+.sim input[type=range]{width:min(100%,20rem);accent-color:var(--accent)}
+.seq{display:flex;flex-wrap:wrap;gap:3px;margin:.6rem 0}
+.seq span{display:grid;place-items:center;height:2.2rem;border-radius:.4rem;font-weight:700;font-size:.85rem;color:#fff;min-width:1.2rem;padding-inline:.15rem}
+.pA{background:var(--h1)}.pB{background:var(--h4)}.pC{background:var(--h6)}.pD{background:var(--h3)}
+:root[data-theme="dark"] .seq span,:root:not([data-theme="light"]) .seq span{color:#0a1220}
+.bar{height:1.1rem;border-radius:1rem;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--h2);transition:width .6s}
+.stat{font-family:var(--f-display);font-weight:800;font-size:1.6rem;font-variant-numeric:tabular-nums}
+.meter{display:flex;gap:1rem;flex-wrap:wrap}.meter>div{flex:1 1 9rem}
+
+/* terminal */
+.term{background:#0b1220;color:#d6e2f5;border-radius:.9rem;padding:1rem;font-family:var(--f-mono);font-size:.88rem;min-height:11rem;white-space:pre-wrap;overflow-x:auto;border:1px solid #223;line-height:1.5}
+.term .pr{color:#7fd16f}.term .cm{color:#ffd479}
+.cmds{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.7rem}
+.cmds button{font-family:var(--f-mono);font-size:.88rem;border:1px solid var(--line);background:var(--surface);border-radius:.5rem;padding:.3rem .7rem}
+.cmds button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+
+/* flashcards */
+.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,16rem),1fr));gap:1rem}
+.flip{perspective:900px;height:13.5rem;background:none;border:0;padding:0;text-align:left}
+.flip .in{position:relative;width:100%;height:100%;transition:transform .55s;transform-style:preserve-3d}
+.flip[aria-pressed="true"] .in{transform:rotateY(180deg)}
+.flip .f,.flip .b{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:1rem;border:1px solid var(--line);padding:1rem;display:flex;flex-direction:column;justify-content:center;gap:.4rem;box-shadow:var(--shadow);overflow:auto}
+.flip .f{background:var(--surface)}
+.flip .f b{font-family:var(--f-display);font-size:1.15rem}
+.flip .b{background:var(--accent);color:var(--accent-ink);transform:rotateY(180deg);font-size:.95rem;line-height:1.45}
+.flip .hint{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+
+/* quiz */
+.qwrap{max-width:50rem}
+.qopt{display:block;width:100%;text-align:left;border:2px solid var(--line);background:var(--surface);border-radius:.8rem;padding:.7rem 1rem;margin-top:.5rem;font-size:1.05rem}
+.qopt:hover:not(:disabled){border-color:var(--accent);background:var(--accent-soft)}
+.qopt.right{border-color:var(--good);background:var(--h6s)}
+.qopt.wrong{border-color:var(--bad);background:var(--h4s)}
+.qopt:disabled{cursor:default}
+.qnum{font-weight:700;color:var(--muted)}
+.qq{font-family:var(--f-display);font-size:1.35rem;font-weight:700;margin:.3rem 0 .5rem}
+.score{display:grid;grid-template-columns:repeat(auto-fit,minmax(8rem,1fr));gap:.8rem;margin:1rem 0}
+.score div{background:var(--surface2);border-radius:.8rem;padding:.8rem;text-align:center}
+.score b{display:block;font-family:var(--f-display);font-size:2rem;font-variant-numeric:tabular-nums}
+
+/* mind map */
+.mm{overflow-x:auto}
+.mm svg{min-width:44rem}
+.mm .node{cursor:pointer}
+.mm .node rect,.mm .node ellipse{stroke-width:2.2}
+.mm .node text{font-weight:700}
+.mm .node:hover rect,.mm .node:focus rect,.mm .node:hover ellipse{stroke-width:4.5}
+.mm .node.sel rect{stroke-width:5;filter:drop-shadow(0 0 8px var(--h3))}
+.mm g.kid,.mm line.edge{transition:opacity .35s,transform .35s}
+.mm .hidden{opacity:0;pointer-events:none}
+
+/* glossary */
+.gl input{width:100%;max-width:26rem;height:2.7rem;border:1px solid var(--line);border-radius:.7rem;padding:0 .9rem;background:var(--surface);color:var(--fg);font:inherit;margin-bottom:1rem}
+.gterm{display:grid;grid-template-columns:minmax(8rem,12rem) minmax(0,1fr);gap:.8rem;padding:.7rem 0;border-bottom:1px solid var(--line)}
+.gterm dt{font-family:var(--f-display);font-weight:700}
+.gterm dd{margin:0}
+
+.verify{display:flex;flex-wrap:wrap;gap:.6rem 1.4rem;align-items:center}
+.verify .stat{font-size:1.4rem}
+.pill{display:inline-block;padding:.15rem .7rem;border-radius:2rem;font-size:.8rem;font-weight:700;background:var(--h6s);color:var(--fg);border:1px solid var(--h6)}
+mark{background:#ffe27a;color:#1b1500;border-radius:.2rem;padding:0 .1rem}
+
+@media (max-width:60rem){
+  .layout{grid-template-columns:minmax(0,1fr)}
+  #menuBtn{display:inline-flex}
+  #side{position:fixed;z-index:60;top:0;left:0;bottom:0;width:min(19rem,86vw);max-height:none;margin:0;padding:calc(1rem + env(safe-area-inset-top,0px)) 1rem 1rem;background:var(--surface);border-right:1px solid var(--line);transform:translateX(-105%);transition:transform .25s;box-shadow:var(--shadow)}
+  #side.open{transform:none}
+  #scrim.open{display:block;position:fixed;inset:0;z-index:55;background:rgba(5,10,20,.5)}
+  .hero{grid-template-columns:minmax(0,1fr)}
+  .brand small{display:none}
+  .ctl .hide-s{display:none}
+}
+@media (max-width:34rem){
+  .brand{display:none}
+  .gterm{grid-template-columns:minmax(0,1fr);gap:.2rem}
+  .chnav b{font-size:.95rem}
+  .top{gap:.4rem}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+@media print{
+  :root{--bg:#fff;--surface:#fff;--fg:#000;--muted:#333;--line:#999;--surface2:#f1f1f1}
+  .top,#side,#toTop,.chnav,#scrim,.btn,.cmds,.sim input,#tipbox{display:none!important}
+  .layout{display:block;padding:0}
+  details{display:block}details>div.dbody{display:block}
+  .chapter{page-break-before:always;animation:none}
+  .card,.fig,.concept,.sim{break-inside:avoid;box-shadow:none}
+  .flip{height:auto}.flip .in{transform:none!important;display:grid;gap:.4rem}.flip .f,.flip .b{position:static;transform:none;backface-visibility:visible;background:#fff;color:#000}
+  a{color:#000}
+}
+</style>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<marker id="ah" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path class="arh" d="M0 0L10 5L0 10z"/></marker>
+</defs></svg>
+<div class="app">
+<header class="top">
+  <button class="iconbtn" id="menuBtn" aria-label="Open chapter menu" aria-expanded="false" aria-controls="side"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+  <div class="brand">Operating System Fundamentals<small>Diploma Computer Engineering</small></div>
+  <div class="search">
+    <label for="q" class="sr">Search this module</label>
+    <input id="q" type="search" placeholder="Search topics  ( press / )" autocomplete="off" aria-controls="results">
+    <div id="results" role="listbox" aria-label="Search results" hidden></div>
+  </div>
+  <div class="ctl" role="group" aria-label="Display controls">
+    <button class="iconbtn hide-s" id="fsDown" aria-label="Decrease text size" title="Smaller text">A−</button>
+    <button class="iconbtn hide-s" id="fsUp" aria-label="Increase text size" title="Larger text">A+</button>
+    <button class="iconbtn" id="themeBtn" aria-label="Switch between light and dark mode" title="Light / dark"><svg class="ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 019.5 4 8.5 8.5 0 1020 14.5z"/></svg></button>
+  </div>
+  <div class="pbar" role="progressbar" aria-label="Learning progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="pbarWrap"><i id="pbar"></i></div>
+</header>
+<div class="layout">
+  <nav id="side" aria-label="Chapters">
+    <div class="side-h">Learning progress<span class="ptxt" id="ptxt">0 of 17 chapters</span></div>
+    <ol id="toc"></ol>
+  </nav>
+  <main id="main" tabindex="-1" aria-live="polite"></main>
+</div>
+</div>
+<div id="scrim"></div>
+<div id="tipbox" role="tooltip" hidden></div>
+<button id="toTop" aria-label="Back to top">↑</button>
+<script>
+'use strict';
+/* ========== helpers ========== */
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const store={
+  get(k,d){try{const v=localStorage.getItem('osf.'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
+  set(k,v){try{localStorage.setItem('osf.'+k,JSON.stringify(v))}catch(e){}}
+};
+const ICONS={
+  convenience:'M5 3l14 8-6 2-2 6z',
+  efficiency:'M13 2L4 14h7l-1 8 9-12h-7z',
+  resource:'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z',
+  security:'M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z',
+  reliability:'M12 3a9 9 0 100 18 9 9 0 000-18zM8 12l3 3 5-6',
+  evolve:'M12 20V5M6 11l6-6 6 6M5 20h14',
+  program:'M6 4l14 8-14 8z',
+  io:'M4 8h14l-4-4M20 16H6l4 4',
+  file:'M6 3h8l4 4v14H6zM14 3v5h5',
+  comm:'M4 5h16v11H9l-5 4z',
+  error:'M12 3l10 18H2zM12 10v5M12 18v.5',
+  accounting:'M12 3a9 9 0 100 18 9 9 0 000-18zM12 7v5l3 2'
+};
+const icon=(n,s=24)=>`<svg class="ico" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${ICONS[n]||ICONS.program}"/></svg>`;
+
+/* tooltips: [[term]] or [[term|shown text]] */
+let TIPLOOK=null;
+function buildTips(){
+  TIPLOOK={};
+  TIPS_EXTRA.concat(GLOSSARY).forEach(g=>{TIPLOOK[g.t.toLowerCase()]=g.d});
+}
+function tipify(h){
+  if(!TIPLOOK)buildTips();
+  return h.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g,(m,t,d)=>{
+    const def=TIPLOOK[t.toLowerCase()];
+    return def?`<span class="tip" tabindex="0" data-tip="${esc(def)}">${d||t}</span>`:(d||t);
+  });
+}
+
+/* ========== SVG building blocks ========== */
+function fig(w,h,inner,cap,label,narrow){
+  return `<figure class="fig${narrow?' narrow':''}"><svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(label||cap||'Diagram')}">${inner}</svg>${cap?`<figcaption>${cap}</figcaption>`:''}</figure>`;
+}
+function bx(x,y,w,h,label,n=1,o={}){
+  const lines=String(label).split('\n'),lh=18;
+  const y0=y+h/2-(lines.length-1)*lh/2+5.5;
+  const t=lines.map((l,i)=>`<text x="${x+w/2}" y="${y0+i*lh}" text-anchor="middle"${o.sm?' class="sm"':''}>${esc(l)}</text>`).join('');
+  return `<g class="bx b${n} ${o.cls||''}" ${o.attr||''}><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${o.rx??10}"/>${t}</g>`;
+}
+function arrow(x1,y1,x2,y2,dash){return `<line class="ar${dash?' dash':''}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" marker-end="url(#ah)"/>`}
+function txt(x,y,s,cls='',anchor='middle'){return `<text x="${x}" y="${y}" text-anchor="${anchor}" class="${cls}">${esc(s)}</text>`}
+
+/* ========== interactive widget registry ========== */
+const CFG={}; const WIDGETS={};
+const widget=(name,cfgKey,extra='')=>`<div data-widget="${name}" data-cfg="${cfgKey}" ${extra}></div>`;
+
+/* stackinfo: clickable layered diagram with an explanation panel */
+WIDGETS.stackinfo=el=>{
+  const c=CFG[el.dataset.cfg],W=c.w||680,L=c.layers;
+  let y=10,out='',pos=[];
+  L.forEach((l,i)=>{
+    const h=l.subs?(l.subH||96):(l.h||52);
+    pos.push({y,h});
+    let g=`<g class="bx b${l.n} click layer" tabindex="0" role="button" aria-label="${esc(l.t)}" data-i="${i}"><rect x="10" y="${y}" width="${W-20}" height="${h}" rx="12"/>`;
+    g+=`<text x="${W/2}" y="${y+(l.subs?24:h/2+5.5)}" text-anchor="middle" class="bold">${esc(l.t)}</text>`;
+    if(l.subs){
+      const k=l.subs.length,gap=8,sw=(W-20-24-(k-1)*gap)/k;
+      l.subs.forEach((s,j)=>{
+        const sx=22+j*(sw+gap),lines=s.split('\n');
+        g+=`<rect x="${sx}" y="${y+38}" width="${sw}" height="${h-50}" rx="8" style="fill:var(--surface);stroke:var(--line);stroke-width:1.5"/>`;
+        lines.forEach((ln,q)=>{g+=`<text x="${sx+sw/2}" y="${y+38+(h-50)/2+5-(lines.length-1)*8+q*16}" text-anchor="middle" class="sm" style="font-weight:600">${esc(ln)}</text>`});
+      });
+    }
+    g+='</g>';
+    out+=g;y+=h;
+    if(i<L.length-1){const a=c.gap||26;out+=arrow(W/2,y+2,W/2,y+a-3,false);if(c.bi)out+=`<line class="ar" x1="${W/2}" y1="${y+a-3}" x2="${W/2}" y2="${y+2}" marker-end="url(#ah)" style="display:none"/>`;y+=a}
+  });
+  const H=y+10;
+  el.innerHTML=`<div class="grid2" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));align-items:start">${fig(W,H,out,c.cap||'Click a layer to read more.',c.label)}<div class="card infobox" aria-live="polite"><span class="lab">Click any layer</span><p>${c.hint||'Select a part of the diagram to see what it does.'}</p></div></div>`;
+  const info=$('.infobox',el);
+  const sel=i=>{
+    $$('.layer',el).forEach(g=>g.classList.toggle('active',+g.dataset.i===i));
+    const l=L[i];info.innerHTML=tipify(`<span class="lab">${esc(c.role||'Layer')}</span><h4>${esc(l.t)}</h4><p>${l.info}</p>${l.ex?`<p><b>Example:</b> ${l.ex}</p>`:''}`);
+  };
+  $$('.layer',el).forEach(g=>{
+    g.addEventListener('click',()=>sel(+g.dataset.i));
+    g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();sel(+g.dataset.i)}});
+  });
+  if(c.start!=null)sel(c.start);
+};
+
+/* hubinfo: centre node with clickable spokes (interactive mind map style) */
+WIDGETS.hubinfo=el=>{
+  const c=CFG[el.dataset.cfg],N=c.items.length,W=820,H=c.h||470,cx=W/2,cy=H/2;
+  const rx=c.rx||305,ry=c.ry||(H/2-48),nw=c.nw||150,nh=c.nh||50;
+  let out='',nodes='';
+  c.items.forEach((it,i)=>{
+    const a=-Math.PI/2+i*2*Math.PI/N,x=cx+rx*Math.cos(a),y=cy+ry*Math.sin(a);
+    out+=`<line class="ln" x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" style="stroke-width:3"/>`;
+    nodes+=bx(x-nw/2,y-nh/2,nw,nh,it.t,it.n||((i%6)+1),{cls:'click hub',attr:`tabindex="0" role="button" aria-label="${esc(it.t.replace(/\n/g,' '))}" data-i="${i}"`});
+  });
+  out+=nodes+`<g class="bx b0"><circle cx="${cx}" cy="${cy}" r="${c.cr||64}" style="stroke-width:3"/>${c.center.split('\n').map((l,i,a)=>`<text x="${cx}" y="${cy+5.5+(i-(a.length-1)/2)*19}" text-anchor="middle" class="bold">${esc(l)}</text>`).join('')}</g>`;
+  el.innerHTML=`<div class="stack">${fig(W,H,out,c.cap||'Click any node to read more.',c.label)}<div class="card infobox" aria-live="polite"><span class="lab">Click a node</span><p>${c.hint||''}</p></div></div>`;
+  const info=$('.infobox',el);
+  const sel=i=>{
+    $$('.hub',el).forEach(g=>g.classList.toggle('active',+g.dataset.i===i));
+    const it=c.items[i];
+    info.innerHTML=tipify(`<span class="lab">${esc(c.role||'Topic')}</span><h4>${icon(it.ic||'program',22)} ${esc(it.t.replace(/\n/g,' '))}</h4>${it.rows?`<div class="grid3" style="margin-top:.5rem">${it.rows.map(r=>`<div class="callout ${r[2]||''}"><span class="lab">${r[0]}</span>${r[1]}</div>`).join('')}</div>`:`<p>${it.info}</p>`}`);
+  };
+  $$('.hub',el).forEach(g=>{
+    g.addEventListener('click',()=>sel(+g.dataset.i));
+    g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();sel(+g.dataset.i)}});
+  });
+};
+
+/* stepflow: boxes joined by arrows, stepped through with Play */
+WIDGETS.stepflow=el=>{
+  const c=CFG[el.dataset.cfg],S=c.steps,N=S.length,W=860,gap=c.gap||50,bw=(W-20-(N-1)*gap)/N,bh=70;
+  let out='';
+  S.forEach((s,i)=>{
+    const x=10+i*(bw+gap);
+    out+=bx(x,40,bw,bh,s.t,s.n||((i%6)+1),{cls:'step',attr:`data-i="${i}"`});
+    out+=txt(x+bw/2,28,`Step ${i+1}`,'sm mut');
+    if(i<N-1)out+=arrow(x+bw+4,75,x+bw+gap-4,75);
+  });
+  out+=`<circle class="flow-dot" r="9" cx="10" cy="75" style="fill:var(--h3);stroke:var(--fg);stroke-width:2;opacity:0" />`;
+  el.innerHTML=`<div class="stack">${fig(W,140,out,c.cap,c.label)}<div class="card infobox"><div class="row"><button class="btn" data-a="play">▶ Play</button><button class="btn ghost" data-a="next">Next step</button><button class="btn ghost" data-a="reset">Reset</button></div><p class="cap" style="margin-top:.7rem" aria-live="polite">${esc(c.hint||'Press Play to watch the steps.')}</p></div></div>`;
+  let cur=-1,timer=null;
+  const dot=$('.flow-dot',el),cap=$('.cap',el),steps=$$('.step',el);
+  const go=i=>{
+    cur=i;steps.forEach((g,j)=>{g.classList.toggle('lit',j===i);g.classList.toggle('dim',i>=0&&j>i)});
+    if(i>=0){const g=steps[i].querySelector('rect');const x=+g.getAttribute('x')+bw/2;dot.setAttribute('cx',x);dot.style.opacity=1;cap.innerHTML=tipify(`<b>${esc(S[i].t.replace(/\n/g,' '))}:</b> ${S[i].cap}`)}
+    else{dot.style.opacity=0;cap.textContent=c.hint||''}
+  };
+  const stop=()=>{clearInterval(timer);timer=null;$('[data-a=play]',el).textContent='▶ Play'};
+  el.addEventListener('click',e=>{
+    const a=e.target.closest('[data-a]')?.dataset.a;const st=e.target.closest('.step');
+    if(st){stop();go(+st.dataset.i);return}
+    if(a==='next'){stop();go(cur>=N-1?0:cur+1)}
+    if(a==='reset'){stop();go(-1)}
+    if(a==='play'){
+      if(timer){stop();return}
+      $('[data-a=play]',el).textContent='❚❚ Pause';if(cur>=N-1)cur=-1;
+      go(cur+1);timer=setInterval(()=>{if(cur>=N-1){stop();return}go(cur+1)},1900);
+    }
+  });
+  new MutationObserver(()=>{if(!document.body.contains(el))stop()}).observe(document.body,{childList:true,subtree:true});
+  go(-1);
+};
+
+/* ========== static diagram library ========== */
+const DG={};
+DG.analogy=()=>{
+  let o='';
+  o+=`<rect x="190" y="12" width="500" height="372" rx="14" style="fill:var(--surface2);stroke:var(--muted);stroke-width:2"/>`;
+  o+=txt(440,36,'COMPUTER = BUILDING','ttl');
+  o+=bx(215,56,450,56,'Operating System = Building Manager\n(decides who gets which room, when, and keeps order)',3,{sm:true});
+  o+=arrow(440,112,440,138);o+=arrow(440,138,440,112);
+  const rooms=[['Hardware: CPU\n(main office)',2],['Hardware: RAM\n(work desks)',2],['Hardware: Disk\n(storage room)',2],['Hardware: I/O\n(doors, printer)',2]];
+  rooms.forEach((r,i)=>{o+=bx(210+i*118,146,108,66,r[0],r[1],{sm:true})});
+  o+=txt(440,240,'Physical rooms and equipment','sm mut');
+  o+=bx(215,262,450,50,'Applications = People using the building\n(browser, game, word processor)',1,{sm:true});
+  o+=arrow(440,336,440,314);
+  o+=bx(300,336,280,40,'User = person requesting services',5,{sm:true});
+  o+=`<g><circle cx="90" cy="80" r="26" style="fill:var(--h5s);stroke:var(--h5);stroke-width:2"/><path d="M90 66v22M78 78h24M90 88l-10 16M90 88l10 16" style="stroke:var(--h5);stroke-width:3;fill:none;stroke-linecap:round"/></g>`;
+  o+=txt(90,130,'Manager','sm mut');
+  o+=txt(790,100,'Without a manager,','sm mut');o+=txt(790,118,'everyone fights','sm mut');o+=txt(790,136,'for the same room.','sm mut');
+  return fig(880,396,o,'The building analogy: the manager (OS) stands between the people (programs) and the rooms (hardware).','Building analogy for an operating system');
+};
+DG.processMem=()=>{ /* multiprogramming memory picture */ return ''};
+
+DG.thread=()=>{
+  let o='';
+  o+=`<rect x="20" y="20" width="360" height="250" rx="14" style="fill:var(--surface2);stroke:var(--muted);stroke-width:2"/>`;
+  o+=txt(200,46,'ONE PROCESS (e.g. web browser)','ttl');
+  o+=bx(40,64,320,42,'Shared: code + data + open files',3,{sm:true});
+  [['Thread 1\nUser interface',1],['Thread 2\nNetwork',2],['Thread 3\nRendering',6]].forEach((t,i)=>{
+    o+=bx(40+i*110,130,100,70,t[0],t[1],{sm:true});o+=arrow(90+i*110,130,90+i*110,108,true);
+  });
+  o+=txt(200,226,'Each thread has its own stack and registers','sm mut');o+=txt(200,246,'All threads share the same memory','sm mut');
+  o+=`<rect x="420" y="20" width="420" height="250" rx="14" style="fill:var(--surface2);stroke:var(--muted);stroke-width:2"/>`;
+  o+=txt(630,46,'TWO SEPARATE PROCESSES','ttl');
+  o+=bx(440,64,180,120,'Process A\nown memory\nown files',1,{sm:true});o+=bx(640,64,180,120,'Process B\nown memory\nown files',4,{sm:true});
+  o+=arrow(620,124,638,124);o+=arrow(638,124,622,124);
+  o+=txt(630,214,'Need IPC (pipes, messages)','sm mut');o+=txt(630,234,'to talk to each other','sm mut');
+  return fig(860,290,o,'Threads live inside one process and share its memory. Separate processes are isolated from each other.','Process and threads diagram');
+};
+DG.distributed=()=>{
+  let o='';
+  const pcs=[['Computer A',60,40],['Computer B',60,130],['Computer C',60,220],['Computer D',60,310]];
+  pcs.forEach((p,i)=>{o+=bx(p[1],p[2],150,56,p[0]+'\nown CPU + RAM',[1,2,3,4][i],{sm:true});o+=`<line class="ln" x1="210" y1="${p[2]+28}" x2="330" y2="200" style="stroke-width:3"/>`});
+  o+=`<ellipse cx="380" cy="200" rx="70" ry="48" style="fill:var(--surface2);stroke:var(--muted);stroke-width:2.5"/>`+txt(380,196,'Network','bold')+txt(380,215,'(LAN / Internet)','sm mut');
+  o+=arrow(452,200,520,200);
+  o+=bx(526,120,300,160,'DISTRIBUTED OS\n\nOne single, shared view:\none file system, one set of users,\none pool of CPU and memory',5,{sm:true});
+  o+=txt(676,310,'The user sees ONE computer','sm mut');
+  o+=txt(676,330,'Resource sharing · Load balancing · Fault tolerance','sm mut');
+  return fig(880,360,o,'Many connected computers are managed by one distributed OS so they look like one system.','Distributed OS network diagram');
+};
+DG.embedded=()=>{
+  let o='';
+  o+=bx(300,14,260,54,'Embedded device\n(washing machine, router, ATM)',3,{sm:true});
+  o+=arrow(430,68,430,96);
+  o+=bx(300,98,260,54,'Embedded OS\n(small, dedicated, fast to start)',5,{sm:true});
+  [['CPU /\nMicrocontroller',1,120],['Sensors\n(input)',2,330],['Actuators\n(motor, valve, screen)',4,540]].forEach(s=>{
+    o+=bx(s[2],212,200,60,s[0],s[1],{sm:true});o+=arrow(430,152,s[2]+100,208);
+  });
+  o+=txt(430,300,'Sensors send readings in; the OS decides; actuators do the work.','sm mut');
+  return fig(860,316,o,'An embedded OS sits between one dedicated device and its CPU, sensors and actuators.','Embedded OS diagram');
+};
+DG.multiprog=()=>`<div data-widget="multiprog"></div>`;
+DG.monoVsMicro=()=>`<div data-widget="crash"></div>`;
+DG.users=()=>{
+  let o='';
+  [['User 1',30,1],['User 2',110,2],['User 3',190,6]].forEach(u=>{o+=bx(30,u[1],120,50,u[0],u[2],{sm:true});o+=arrow(150,u[1]+25,278,128+0)});
+  o+=bx(284,95,200,64,'Operating System\n(time-sharing scheduler)',5,{sm:true});
+  o+=arrow(484,127,560,127);
+  o+=bx(566,95,140,64,'CPU\n(one slice at a time)',3,{sm:true});
+  o+=txt(390,250,'Each user feels the whole computer is theirs.','sm mut');
+  return fig(740,270,o,'Many users share one CPU. The OS hands out tiny time slices.','Time sharing users diagram',true);
+};
+DG.rtosTimeline=()=>''; /* handled by widget */
+DG.gloss=()=>'';
+/* ========== comparison tables, concept cards ========== */
+const dots=(n,low)=>`<span class="dots${low?' low':''}" role="img" aria-label="${n} out of 5">${[1,2,3,4,5].map(i=>`<i class="${i<=n?'on':''}"></i>`).join('')}</span>`;
+function cmpTable(head,rows,cap){
+  return `<div class="tablewrap" role="region" tabindex="0" aria-label="${esc(cap||'Comparison table')}"><table class="cmp"><thead><tr>${head.map((h,i)=>`<th scope="col">${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr><th scope="row">${r[0]}</th>${r.slice(1).map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+const list=(a,c)=>`<ul class="${c}">${a.map(x=>`<li>${x}</li>`).join('')}</ul>`;
+/* the ten-part teaching pattern */
+function concept(o){
+  return `<article class="concept card" id="${o.id}" aria-labelledby="${o.id}-h">
+  <header><span class="badge">${o.badge||'OS'}</span><h3 id="${o.id}-h">${o.title}</h3></header>
+  <div class="callout"><span class="lab">Simple definition</span><p>${o.def}</p></div>
+  <div class="grid2"><div><h4 class="lab">Why do we need it?</h4><p>${o.why}</p></div><div><h4 class="lab">How does it work?</h4><p>${o.how}</p></div></div>
+  ${o.diagram||''}
+  <div class="grid2"><div class="callout real"><span class="lab">Real-life example</span><p>${o.real}</p></div><div class="callout comp"><span class="lab">Computer example</span><p>${o.comp}</p></div></div>
+  <div class="grid2"><div><h4 class="lab">Advantages</h4>${list(o.adv,'tick')}</div><div><h4 class="lab">Disadvantages</h4>${list(o.dis,'cross')}</div></div>
+  <div><h4 class="lab">Important points</h4>${list(o.pts,'pts')}</div>
+  ${o.more?`<details><summary>Go deeper (optional)</summary><div class="dbody">${o.more}</div></details>`:''}
+  <div class="callout exam"><span class="lab">Exam-oriented definition</span><p>${o.exam}</p></div>
+</article>`;
+}
+const sec=(t,id)=>`<h2 class="sec"${id?` id="${id}"`:''}>${t}</h2>`;
+const detail=(t,b,open)=>`<details${open?' open':''}><summary>${t}</summary><div class="dbody">${b}</div></details>`;
+const chHead=(ey,t,sub)=>`<div class="ch-head"><span class="eyebrow">${ey}</span><h1>${t}</h1>${sub?`<p>${sub}</p>`:''}</div>`;
+
+/* ========== multiprogramming simulator ========== */
+WIDGETS.multiprog=el=>{
+  el.innerHTML=`<div class="sim"><h4>Try it: does the CPU stay busy?</h4>
+  <p>Each program computes for 2 ticks, then waits 3 ticks for I/O (like reading a file). Press <b>Next tick</b> or <b>Auto-run</b>.</p>
+  <div class="row"><label><input type="checkbox" id="mpOn" checked> Multiprogramming ON (4 programs in RAM)</label>
+  <button class="btn" data-a="tick">Next tick</button><button class="btn ghost" data-a="auto">Auto-run</button><button class="btn ghost" data-a="reset">Reset</button></div>
+  <div data-s="fig" style="margin-top:.8rem"></div>
+  <div class="meter"><div><span class="lab">CPU busy</span><div class="stat" data-s="util">0%</div><div class="bar"><i data-s="bar" style="width:0"></i></div></div><div><span class="lab">Ticks</span><div class="stat" data-s="t">0</div></div><div><span class="lab">Now running</span><div class="stat" data-s="cur">none</div></div></div></div>`;
+  let progs,cur,busy,total,last,timer=null;
+  const reset=()=>{
+    const n=$('#mpOn',el).checked?4:1;
+    progs=['A','B','C','D'].slice(0,n).map(nm=>({nm,st:'ready',run:2,wait:0}));
+    cur=null;busy=0;total=0;last=-1;draw();
+  };
+  const draw=()=>{
+    const cls={A:1,B:4,C:6,D:3};
+    let o=bx(20,10,260,34,'MAIN MEMORY (RAM)',0,{sm:true,rx:6});
+    progs.forEach((p,i)=>{
+      const y=54+i*62,state=p.st==='run'?'RUNNING':p.st==='wait'?'WAITING FOR I/O ('+p.wait+')':'READY';
+      o+=bx(20,y,260,52,`Program ${p.nm}\n${state}`,cls[p.nm],{sm:true,cls:p.st==='run'?'lit':p.st==='wait'?'dead':''});
+      if(p.st==='run')o+=arrow(282,y+26,380,100);
+    });
+    o+=bx(384,60,150,80,cur?`CPU\nexecuting ${cur.nm}`:'CPU\nIDLE',cur?2:0,{sm:true,cls:cur?'lit':'dead'});
+    return $('[data-s=fig]',el).innerHTML=fig(560,54+progs.length*62,o,'Programs wait in RAM; the CPU runs whichever one is ready.','Multiprogramming simulator'),
+      ($('[data-s=util]',el).textContent=total?Math.round(100*busy/total)+'%':'0%'),
+      ($('[data-s=bar]',el).style.width=(total?100*busy/total:0)+'%'),
+      ($('[data-s=t]',el).textContent=total),
+      ($('[data-s=cur]',el).textContent=cur?'Program '+cur.nm:'nobody (CPU idle)');
+  };
+  const tick=()=>{
+    progs.forEach(p=>{if(p.st==='wait'){p.wait--;if(p.wait<=0){p.st='ready';p.run=2}}});
+    if(!cur){
+      for(let k=1;k<=progs.length;k++){const i=(last+k)%progs.length;if(progs[i].st==='ready'){cur=progs[i];cur.st='run';last=i;break}}
+    }
+    total++;
+    if(cur){busy++;cur.run--}
+    draw();
+    if(cur&&cur.run<=0){cur.st='wait';cur.wait=4;cur=null}
+  };
+  el.addEventListener('click',e=>{
+    const a=e.target.closest('[data-a]')?.dataset.a;if(!a)return;
+    if(a==='tick')tick();
+    if(a==='reset'){clearInterval(timer);timer=null;reset()}
+    if(a==='auto'){if(timer){clearInterval(timer);timer=null}else timer=setInterval(()=>{if(!document.body.contains(el)){clearInterval(timer);return}tick()},700)}
+  });
+  $('#mpOn',el).addEventListener('change',()=>{clearInterval(timer);timer=null;reset()});
+  reset();for(let i=0;i<10;i++)tick();
+};
+
+/* ========== time-sharing (round robin) ========== */
+WIDGETS.rr=el=>{
+  const jobs=[['A',9],['B',6],['C',8]];
+  el.innerHTML=`<div class="sim"><h4>Try it: change the time slice</h4>
+  <p>Three processes need 9 ms, 6 ms and 8 ms of CPU. The OS gives each one a time slice in turn.</p>
+  <label for="qs">Time slice: <b data-s="q">3</b> ms</label><br><input id="qs" type="range" min="1" max="9" value="3" aria-label="Time slice in milliseconds">
+  <div class="seq" data-s="seq" aria-label="Order in which processes get the CPU"></div>
+  <div class="meter"><div><span class="lab">Slices given</span><div class="stat" data-s="n">0</div></div><div><span class="lab">Context switches</span><div class="stat" data-s="cs">0</div></div></div>
+  <p data-s="msg" style="margin-top:.6rem"></p></div>`;
+  const run=()=>{
+    const q=+$('#qs',el).value;$('[data-s=q]',el).textContent=q;
+    let rem=jobs.map(j=>j[1]),seq=[],i=0;
+    while(rem.some(r=>r>0)){
+      if(rem[i]>0){const d=Math.min(q,rem[i]);rem[i]-=d;seq.push([jobs[i][0],d])}
+      i=(i+1)%jobs.length;
+    }
+    let cs=0;for(let k=1;k<seq.length;k++)if(seq[k][0]!==seq[k-1][0])cs++;
+    $('[data-s=seq]',el).innerHTML=seq.map((s,k)=>`<span class="p${s[0]}" style="flex:${s[1]} 1 ${s[1]*1.6}rem;animation:rise .4s ${k*0.05}s both">${s[0]} · ${s[1]}ms</span>`).join('');
+    $('[data-s=n]',el).textContent=seq.length;$('[data-s=cs]',el).textContent=cs;
+    $('[data-s=msg]',el).innerHTML=q<=1?'Very small slices: everyone is served quickly, but the OS wastes a lot of time on context switches.':q>=9?'Slice as long as the longest job: each process runs to the end before the next starts. It is no longer interactive.':'A balanced slice: users get quick responses and context switches stay reasonable.';
+  };
+  $('#qs',el).addEventListener('input',run);run();
+};
+
+/* ========== real-time deadline ========== */
+WIDGETS.rtos=el=>{
+  el.innerHTML=`<div class="sim"><h4>Try it: meet the deadline</h4>
+  <p>An event happens at time 0. The deadline is <b>10 ms</b>. Slide the processing time and see what happens.</p>
+  <div class="row"><label><input type="radio" name="rtk" value="hard" checked> Hard real-time (airbag)</label><label><input type="radio" name="rtk" value="soft"> Soft real-time (video call)</label></div>
+  <label for="rtp">Processing time: <b data-s="p">6</b> ms</label><br><input id="rtp" type="range" min="1" max="20" value="6" aria-label="Processing time in milliseconds">
+  <div style="position:relative;margin:1.6rem 0 .4rem"><div class="bar" style="height:1.8rem"><i data-s="fill" style="width:30%"></i></div>
+  <div style="position:absolute;left:50%;top:-1.1rem;bottom:-.3rem;border-left:3px dashed var(--bad)"></div></div>
+  <div class="row" style="justify-content:space-between;font-size:.85rem;color:var(--muted)"><span>EVENT (0 ms)</span><span style="margin-left:25%">DEADLINE (10 ms)</span><span>20 ms</span></div>
+  <div class="callout" data-s="out" style="margin-top:.8rem" aria-live="polite"></div></div>`;
+  const upd=()=>{
+    const p=+$('#rtp',el).value,hard=$('input[name=rtk]:checked',el).value==='hard';
+    $('[data-s=p]',el).textContent=p;const f=$('[data-s=fill]',el);f.style.width=(p/20*100)+'%';
+    const late=p>10,o=$('[data-s=out]',el);
+    f.style.background=late?'var(--bad)':'var(--h2)';
+    o.className='callout '+(late?'warn':'comp');
+    o.innerHTML=late?(hard?'<span class="lab">Deadline missed</span><b>System failure.</b> In a hard real-time system a late answer is a wrong answer. The airbag opens too late.':'<span class="lab">Deadline missed</span><b>Quality drops.</b> In a soft real-time system the video freezes for a moment, but the call carries on.'):'<span class="lab">Deadline met</span>The result arrived in time. EVENT → PROCESSING → DEADLINE worked as designed.';
+  };
+  $$('input',el).forEach(i=>i.addEventListener('input',upd));upd();
+};
+
+/* ========== monolithic vs microkernel crash demo ========== */
+WIDGETS.crash=el=>{
+  el.innerHTML=`<div class="sim"><h4>Try it: a device driver crashes</h4><p>Press the button and watch which parts of the system survive.</p>
+  <div class="row"><button class="btn" data-a="crash">Crash the disk driver</button><button class="btn ghost" data-a="fix">Restore</button></div>
+  <div data-s="fig" style="margin-top:.8rem"></div><div class="callout" data-s="msg" aria-live="polite" style="margin-top:.6rem"></div></div>`;
+  let dead=false;
+  const draw=()=>{
+    let o=txt(215,24,'MONOLITHIC KERNEL','ttl')+txt(645,24,'MICROKERNEL','ttl');
+    o+=bx(20,40,390,40,'Applications',1,{sm:true});o+=arrow(215,80,215,98);
+    o+=bx(20,100,390,210,'',dead?4:5,{cls:dead?'dead':''});
+    o+=txt(215,124,dead?'ONE BIG KERNEL: CRASHED':'ONE BIG KERNEL (everything inside)','bold');
+    ['Process mgmt','Memory mgmt','File system','Networking'].forEach((s,i)=>{o+=bx(36+(i%2)*190,140+Math.floor(i/2)*50,170,40,s,dead?4:2,{sm:true,cls:dead?'dead':''})});
+    o+=bx(36,246,358,46,dead?'Disk driver (FAILED)':'Disk driver',4,{sm:true,cls:dead?'dead':''});
+    o+=bx(450,40,390,40,'Applications',1,{sm:true});o+=arrow(645,80,645,98);
+    o+=bx(450,100,390,100,'USER SPACE servers',dead?0:0,{});
+    o+=bx(462,128,112,58,'File\nserver',2,{sm:true});o+=bx(584,128,112,58,'Network\nserver',2,{sm:true});
+    o+=bx(706,128,122,58,dead?'Disk driver\n(FAILED)':'Disk driver',4,{sm:true,cls:dead?'dead':''});
+    o+=arrow(645,200,645,218);
+    o+=bx(450,220,390,90,'MICROKERNEL\nIPC · scheduling · basic memory',dead?5:5,{sm:true});
+    o+=arrow(215,310,215,330);o+=arrow(645,310,645,330);
+    o+=bx(20,332,820,36,'HARDWARE',0,{sm:true});
+    $('[data-s=fig]',el).innerHTML=fig(860,384,o,'Left: all services share one kernel. Right: only essential services are in the kernel.','Monolithic kernel compared with microkernel');
+    $('[data-s=msg]',el).innerHTML=dead?'<span class="lab">Result</span><b>Monolithic:</b> the driver runs inside the kernel, so a bug can crash the whole system (blue screen / kernel panic). <b>Microkernel:</b> the driver is a normal user-space server. Only it fails, and the OS can restart it.':'<span class="lab">Ready</span>Everything is working. Press the button to simulate a faulty driver.';
+  };
+  el.addEventListener('click',e=>{const a=e.target.closest('[data-a]')?.dataset.a;if(a==='crash'){dead=true;draw()}if(a==='fix'){dead=false;draw()}});
+  draw();
+};
+
+/* ========== mind map ========== */
+const MM=[
+ {t:'Fundamentals',n:1,a:-150,r:165,ch:'intro',kids:[['Definition','intro',''],['Goals','goals',''],['Services','services','']]},
+ {t:'Types',n:2,a:-40,r:175,ch:'types',spread:30,kr:340,kids:[['Multiprogramming','types','multiprog'],['Time Sharing','types','timeshare'],['Real Time','types','rtos'],['Multithreading','types','multithread'],['Distributed','types','distributed'],['Embedded','types','embedded']]},
+ {t:'Structure',n:3,a:152,r:165,ch:'structure',kids:[['Layered','structure','layered'],['Monolithic','structure','monolithic'],['Microkernel','structure','microkernel']]},
+ {t:'Case Studies',n:6,a:40,r:175,ch:'linux',kids:[['Linux','linux',''],['Windows','windows',''],['macOS','macos','']]}
+];
+WIDGETS.mindmap=el=>{
+  const W=1000,H=700,cx=500,cy=350,open=store.get('mmopen',{0:1,1:1,2:1,3:1});
+  el.innerHTML=`<div class="stack"><div class="row"><button class="btn ghost" data-a="all">Expand all</button><button class="btn ghost" data-a="none">Collapse all</button><span class="chip">Click a branch to fold it. Click a topic to jump to its section.</span></div><div class="mm card" style="padding:.5rem" role="group" aria-label="Interactive mind map of the whole module"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Mind map of operating system topics"></svg></div></div>`;
+  const svg=$('svg',el),sel=store.get('mmsel','');
+  const rad=d=>d*Math.PI/180;
+  const draw=()=>{
+    let edges='',nodes='';
+    MM.forEach((b,i)=>{
+      const bx0=cx+b.r*Math.cos(rad(b.a)),by0=cy+b.r*Math.sin(rad(b.a));
+      edges+=`<line class="edge" x1="${cx}" y1="${cy}" x2="${bx0}" y2="${by0}" style="stroke:var(--h${b.n});stroke-width:4"/>`;
+      const k=b.kids.length,sp=b.spread||24,kr=b.kr||300;
+      b.kids.forEach((kd,j)=>{
+        const ang=b.a+(k===1?0:(j-(k-1)/2)*(sp*2/(k-1))*(k===3?1:1));
+        const x=cx+kr*Math.cos(rad(ang)),y=cy+kr*Math.sin(rad(ang)),hid=!open[i]?' hidden':'';
+        edges+=`<line class="edge${hid}" data-b="${i}" x1="${bx0}" y1="${by0}" x2="${x}" y2="${y}" style="stroke:var(--h${b.n});stroke-width:2.2"/>`;
+        const key=kd[1]+'#'+kd[2];
+        nodes+=`<g class="node leaf kid${hid} bx b${b.n}${sel===key?' sel':''}" data-b="${i}" data-ch="${kd[1]}" data-an="${kd[2]}" data-key="${esc(key)}" tabindex="${open[i]?0:-1}" role="link" aria-label="Go to ${esc(kd[0])}"><rect x="${x-68}" y="${y-17}" width="136" height="34" rx="17"/><text x="${x}" y="${y+5}" text-anchor="middle" style="font-size:14px">${esc(kd[0])}</text></g>`;
+      });
+      nodes+=`<g class="node branch bx b${b.n}" data-i="${i}" tabindex="0" role="button" aria-expanded="${!!open[i]}" aria-label="${b.t} branch"><rect x="${bx0-72}" y="${by0-22}" width="144" height="44" rx="22"/><text x="${bx0}" y="${by0+5.5}" text-anchor="middle" style="font-size:16px">${b.t} ${open[i]?'▾':'▸'}</text></g>`;
+    });
+    nodes+=`<g class="node center bx b0" tabindex="0" role="button" aria-label="Expand all branches"><ellipse cx="${cx}" cy="${cy}" rx="88" ry="46" style="stroke-width:3.5"/><text x="${cx}" y="${cy-2}" text-anchor="middle" style="font-size:16px;font-family:var(--f-display)">OPERATING</text><text x="${cx}" y="${cy+18}" text-anchor="middle" style="font-size:16px;font-family:var(--f-display)">SYSTEM</text></g>`;
+    svg.innerHTML=edges+nodes;
+  };
+  const setAll=v=>{MM.forEach((_,i)=>open[i]=v?1:0);store.set('mmopen',open);draw()};
+  svg.addEventListener('click',e=>{
+    const n=e.target.closest('.node');if(!n)return;
+    if(n.classList.contains('center')){setAll(1);return}
+    if(n.classList.contains('branch')){const i=n.dataset.i;open[i]=open[i]?0:1;store.set('mmopen',open);draw();return}
+    if(n.classList.contains('leaf')){store.set('mmsel',n.dataset.key);$$('.leaf',svg).forEach(g=>g.classList.toggle('sel',g===n));setTimeout(()=>go(n.dataset.ch,n.dataset.an),180)}
+  });
+  svg.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.closest('.node')){e.preventDefault();e.target.closest('.node').dispatchEvent(new MouseEvent('click',{bubbles:true}))}});
+  el.addEventListener('click',e=>{const a=e.target.closest('[data-a]')?.dataset.a;if(a==='all')setAll(1);if(a==='none')setAll(0)});
+  draw();
+};
+
+/* ========== Linux terminal ========== */
+const LCMD=[
+ ['pwd','Show the folder you are in','/home/student'],
+ ['ls','List files and folders','Desktop  Documents  Downloads  notes.txt  report.docx'],
+ ['cd Documents','Change folder','(no output)  The prompt now shows ~/Documents'],
+ ['mkdir lab1','Make a new folder called lab1','(no output)  Folder "lab1" created'],
+ ['touch a.txt','Create an empty file','(no output)  File "a.txt" created'],
+ ['cp a.txt b.txt','Copy a file','(no output)  b.txt is a copy of a.txt'],
+ ['mv b.txt lab1/','Move (or rename) a file','(no output)  b.txt now lives inside lab1'],
+ ['rm a.txt','Delete a file (no recycle bin!)','(no output)  a.txt is gone for good'],
+ ['cat notes.txt','Print the contents of a file','Unit 1: Operating System\n- Goals\n- Services\n- Types'],
+ ['ps','List your running processes','  PID TTY          TIME CMD\n 2210 pts/0    00:00:00 bash\n 2458 pts/0    00:00:00 ps'],
+ ['top','Live view of CPU and memory use','top - 09:10:02 up 2:14,  1 user,  load average: 0.21, 0.30, 0.28\nTasks: 212 total,   1 running, 211 sleeping\n%Cpu(s):  4.0 us,  1.2 sy,  0.0 ni, 94.6 id\nMiB Mem :  7890.0 total,  3120.5 free,  2780.2 used\n  PID USER   %CPU %MEM COMMAND\n 1432 sandip  3.1  4.2 firefox\n  911 root    0.7  0.9 Xorg\n(press q to quit. Numbers are an example.)']
+];
+WIDGETS.linuxterm=el=>{
+  el.innerHTML=`<div class="sim"><h4>Try it: click a command</h4><div class="cmds" role="group" aria-label="Linux commands">${LCMD.map((c,i)=>`<button aria-pressed="${i===0}" data-i="${i}">${esc(c[0].split(' ')[0])}</button>`).join('')}</div><div class="term" data-s="t" aria-live="polite"></div><p data-s="d" style="margin-top:.6rem"></p></div>`;
+  const show=i=>{
+    $$('.cmds button',el).forEach(b=>b.setAttribute('aria-pressed',+b.dataset.i===i));
+    $('[data-s=t]',el).innerHTML=`<span class="pr">student@linux:~$</span> <span class="cm">${esc(LCMD[i][0])}</span>\n${esc(LCMD[i][2])}`;
+    $('[data-s=d]',el).innerHTML=`<b>${esc(LCMD[i][0])}</b>: ${LCMD[i][1]}. Sample output is shown.`;
+  };
+  el.addEventListener('click',e=>{const b=e.target.closest('.cmds button');if(b)show(+b.dataset.i)});show(0);
+};
+
+/* ========== flashcards ========== */
+WIDGETS.flash=el=>{
+  el.innerHTML=`<div class="stack"><div class="row"><button class="btn ghost" data-a="flipall">Flip all</button><button class="btn ghost" data-a="reset">Show questions</button><span class="chip" data-s="c">${FLASH.length} cards</span></div><div class="fgrid">${FLASH.map((f,i)=>`<button class="flip" aria-pressed="false" aria-label="Flashcard: ${esc(f.q)}. Press to reveal the answer."><span class="in"><span class="f"><span class="hint">Question · tap to flip</span><b>${tipify(f.q)}</b></span><span class="b"><span class="hint" style="color:inherit;opacity:.8">Answer</span>${tipify(f.a)}</span></span></button>`).join('')}</div></div>`;
+  el.addEventListener('click',e=>{
+    const b=e.target.closest('.flip');if(b){b.setAttribute('aria-pressed',b.getAttribute('aria-pressed')==='true'?'false':'true');return}
+    const a=e.target.closest('[data-a]')?.dataset.a;
+    if(a==='flipall')$$('.flip',el).forEach(f=>f.setAttribute('aria-pressed','true'));
+    if(a==='reset')$$('.flip',el).forEach(f=>f.setAttribute('aria-pressed','false'));
+  });
+};
+
+/* ========== quiz ========== */
+WIDGETS.quiz=el=>{
+  let i=0,score=0,answered=false,wrong=[];
+  const total=QUIZ.length;
+  const render=()=>{
+    if(i>=total){
+      const pct=Math.round(100*score/total);
+      const msg=pct>=90?'Excellent! You have mastered Operating System fundamentals.':pct>=75?'Very good. Revise the topics you missed and try again.':pct>=50?'Fair attempt. Go through the flashcards and the comparison tables, then retry.':'Keep going. Read the chapters again slowly, look at the diagrams, then retry.';
+      el.innerHTML=`<div class="card qwrap"><h3>Quiz complete</h3><div class="score"><div><b>${total}</b>Total questions</div><div><b style="color:var(--good)">${score}</b>Correct answers</div><div><b style="color:var(--bad)">${total-score}</b>Wrong answers</div><div><b>${pct}%</b>Percentage</div></div><div class="callout ${pct>=50?'comp':'warn'}"><span class="lab">Performance</span><p><b>${msg}</b></p></div>${wrong.length?`<details><summary>Review the ${wrong.length} question${wrong.length>1?'s':''} you missed</summary><div class="dbody">${wrong.map(w=>`<p><b>Q${w+1}. ${tipify(QUIZ[w].q)}</b><br>Correct answer: ${esc(QUIZ[w].o[QUIZ[w].a])}<br><span style="color:var(--muted)">${tipify(QUIZ[w].e)}</span></p>`).join('')}</div></details>`:''}<div class="row" style="margin-top:1rem"><button class="btn" data-a="restart">Try again</button></div></div>`;
+      return;
+    }
+    const q=QUIZ[i];answered=false;
+    el.innerHTML=`<div class="card qwrap"><div class="row" style="justify-content:space-between"><span class="qnum">Question ${i+1} of ${total}</span><span class="chip">Score: ${score}</span></div><div class="bar" style="margin:.5rem 0"><i style="width:${100*i/total}%;background:var(--accent)"></i></div><div class="qq">${tipify(q.q)}</div><div role="group" aria-label="Answer options">${q.o.map((o,k)=>`<button class="qopt" data-k="${k}"><b>${'ABCD'[k]}.</b> ${esc(o)}</button>`).join('')}</div><div data-s="fb" aria-live="polite"></div></div>`;
+  };
+  el.addEventListener('click',e=>{
+    const a=e.target.closest('[data-a]')?.dataset.a;
+    if(a==='restart'){i=0;score=0;wrong=[];render();return}
+    if(a==='next'){i++;render();el.scrollIntoView({block:'nearest'});return}
+    const b=e.target.closest('.qopt');if(!b||answered)return;
+    answered=true;const k=+b.dataset.k,q=QUIZ[i],ok=k===q.a;
+    if(ok)score++;else wrong.push(i);
+    $$('.qopt',el).forEach((x,j)=>{x.disabled=true;if(j===q.a)x.classList.add('right');else if(j===k)x.classList.add('wrong')});
+    $('[data-s=fb]',el).innerHTML=`<div class="callout ${ok?'comp':'warn'}" style="margin-top:.8rem"><span class="lab">${ok?'Correct':'Not quite. The right answer is '+'ABCD'[q.a]}</span><p>${tipify(q.e)}</p></div><div class="row" style="margin-top:.8rem"><button class="btn" data-a="next">${i===total-1?'See my result':'Next question'}</button></div>`;
+  });
+  render();
+};
+
+/* ========== glossary ========== */
+WIDGETS.glossary=el=>{
+  const sorted=GLOSSARY.slice().sort((a,b)=>a.t.localeCompare(b.t));
+  el.innerHTML=`<div class="gl"><label for="gq" class="sr">Search the glossary</label><input id="gq" type="search" placeholder="Search the glossary…" autocomplete="off"><p class="chip" data-s="n"></p><dl data-s="l"></dl></div>`;
+  const draw=()=>{
+    const q=$('#gq',el).value.trim().toLowerCase();
+    const f=sorted.filter(g=>!q||g.t.toLowerCase().includes(q)||g.d.toLowerCase().includes(q));
+    $('[data-s=n]',el).textContent=f.length+' of '+sorted.length+' terms';
+    $('[data-s=l]',el).innerHTML=f.map(g=>`<div class="gterm"><dt>${esc(g.t)}</dt><dd>${esc(g.d)}</dd></div>`).join('')||'<p>No term matches your search.</p>';
+  };
+  $('#gq',el).addEventListener('input',draw);draw();
+};
+/* ========== CHAPTER CONFIGS (interactive diagrams) ========== */
+CFG.osstack={w:520,gap:30,role:'Layer',label:'Where the operating system sits',cap:'Click a layer to see its job.',hint:'Select User, Application Software, Operating System or Hardware.',start:2,layers:[
+ {t:'User',n:5,h:46,info:'The person who wants something done: type a document, play a song, browse a website.',ex:'You, pressing a key or clicking an icon.'},
+ {t:'Application Software',n:1,h:46,info:'Programs written for users. They do useful work but never touch the hardware directly. They ask the OS for help.',ex:'Chrome, MS Word, VLC, a game.'},
+ {t:'Operating System',n:3,h:56,info:'System software that sits between programs and hardware. It starts programs, shares the CPU and memory, stores files, drives devices and protects the system.',ex:'Windows, Linux, macOS, Android, iOS.'},
+ {t:'Computer Hardware',n:2,h:56,info:'The physical parts: CPU, RAM, disk, keyboard, screen, network card. Hardware does exactly what the OS tells it to do.',ex:'Processor, memory chips, SSD, display.'}
+]};
+const GOALS=[
+ {t:'Convenience',ic:'convenience',n:1,def:'The OS makes the computer easy to use.',why:'Without an OS you would have to write machine code just to show a letter on the screen.',ex:'You click an icon and a program opens. You never think about memory addresses.'},
+ {t:'Efficiency',ic:'efficiency',n:2,def:'The OS uses hardware wisely so that little is wasted.',why:'CPU, memory and disk are costly. Idle hardware is wasted money and wasted time.',ex:'While a file downloads, the CPU runs your music player instead of sitting idle.'},
+ {t:'Resource Management',ic:'resource',n:3,def:'The OS shares CPU, memory, disk and devices among many programs fairly.',why:'Many programs want the same resources at the same time. Someone must decide who gets what.',ex:'Browser, music player and antivirus all share one CPU and one RAM.'},
+ {t:'Security and\nProtection',ic:'security',n:4,def:'The OS keeps data and programs safe from misuse and from each other.',why:'Computers hold private data. One faulty or harmful program must not damage the rest.',ex:'Login passwords, file permissions, and a program that cannot read another program\'s memory.'},
+ {t:'Reliability',ic:'reliability',n:5,def:'The OS keeps working correctly, and recovers from errors.',why:'Users trust computers with banking, exams and hospitals. Crashes are costly.',ex:'If one app freezes, Windows or Linux lets you close it while everything else keeps running.'},
+ {t:'Ability to\nEvolve',ic:'evolve',n:6,def:'The OS can be updated and extended without breaking everything.',why:'New hardware, new threats and new features keep arriving.',ex:'Monthly security updates, new USB drivers, and new features added to Android every year.'}
+];
+CFG.goals={h:430,rx:300,ry:150,center:'OS\nGOALS',role:'Goal',label:'Interactive mind map of OS goals',hint:'Click a goal to see its definition, why it is needed, and an example.',items:GOALS.map(g=>({t:g.t,n:g.n,ic:g.ic,rows:[['Simple definition',g.def],['Why is it required?',g.why,'comp'],['Real-world example',g.ex,'real']]}))};
+const SERV=[
+ {t:'Program\nExecution',ic:'program',n:1,what:'Loads a program into memory, starts it, and cleans up when it ends (normally or because of an error).',ex:'You double-click Chrome. The OS loads Chrome into RAM and gives it CPU time.',comp:'Process manager (loader + scheduler)'},
+ {t:'I/O\nOperations',ic:'io',n:2,what:'Programs cannot talk to devices directly. The OS does the reading and writing for them through device drivers.',ex:'You press Print. The OS sends the document to the printer driver.',comp:'I/O manager and device drivers'},
+ {t:'File-System\nManipulation',ic:'file',n:3,what:'Creates, deletes, reads, writes, renames and searches files and folders, and controls who may use them.',ex:'Saving assignment.docx in the Documents folder.',comp:'File manager (file system)'},
+ {t:'Communication',ic:'comm',n:4,what:'Lets processes exchange data, on the same computer (shared memory, messages) or across a network.',ex:'Copy text in a browser and paste it into Word. Or send a message on WhatsApp Web.',comp:'IPC subsystem and network stack'},
+ {t:'Error\nDetection',ic:'error',n:5,what:'Notices errors in the CPU, memory, devices and programs, and takes a suitable action.',ex:'A program divides by zero. The OS stops that program, not the whole computer.',comp:'Kernel (interrupt and exception handlers)'},
+ {t:'Resource\nAllocation',ic:'resource',n:6,what:'Decides which program gets the CPU, how much memory, and which device, and when.',ex:'Music, browser and a download all share one CPU smoothly.',comp:'CPU scheduler and memory manager'},
+ {t:'Protection\nand Security',ic:'security',n:4,what:'Checks who you are and what you may do. Stops one user or program from harming another.',ex:'A password to log in. A normal user cannot delete system files.',comp:'Security subsystem (authentication, access control)'},
+ {t:'Accounting',ic:'accounting',n:3,what:'Keeps records of which user or program used how much CPU, memory, disk and network.',ex:'Task Manager shows CPU %. A cloud server bills you for the hours you used.',comp:'Resource monitor / accounting module'}
+];
+CFG.services={h:520,rx:315,ry:190,nw:158,center:'OPERATING\nSYSTEM',cr:70,role:'Service',label:'OS services around the operating system',hint:'Click a service to see what it does, an example, and which component provides it.',items:SERV.map(s=>({t:s.t,n:s.n,ic:s.ic,rows:[['What it does',s.what],['Example',s.ex,'real'],['Provided by',s.comp,'comp']]}))};
+CFG.svcflow={label:'What happens when you double-click Chrome',hint:'Press Play to follow what happens when you open a program.',cap:'User → OS → RAM → CPU → Application',steps:[
+ {t:'User',n:5,cap:'You double-click the Chrome icon. This is a request for the OS.'},
+ {t:'Operating\nSystem',n:3,cap:'The OS checks permissions, finds chrome.exe on disk and creates a new process for it.'},
+ {t:'RAM',n:2,cap:'The OS loads Chrome\'s code and data from disk into main memory.'},
+ {t:'CPU',n:4,cap:'The scheduler gives Chrome a time slice on the CPU. Instructions begin to execute.'},
+ {t:'Application\nrunning',n:1,cap:'Chrome\'s window appears. Whenever it needs more (files, network), it asks the OS again.'}]};
+
+/* ========== chapters ========== */
+const CH=[];
+CH.push({id:'intro',title:'Introduction to Operating System',short:'Introduction',render(){
+  return `<section class="hero"><div><span class="eyebrow">Diploma Computer Engineering</span><h1>OPERATING <span>SYSTEM</span></h1>
+  <p class="kicker">Fundamentals, Types, Structure and Case Studies</p>
+  <p class="sub">Understand how an Operating System manages hardware, software and users.</p>
+  <div class="row cta"><button class="btn" data-go="goals">Start learning →</button><button class="btn ghost" data-go="mindmap">See the mind map</button></div></div>
+  ${widget('stackinfo','osstack')}</section>
+  <div class="callout" style="margin-top:1.2rem"><span class="lab">How to use this module</span><p>Use the chapter list on the left (or ← → keys) to move around. Dotted-underlined words show their meaning when you hover or tap them. Click <b>Go deeper</b> boxes to open extra detail. Use <b>A−</b> / <b>A+</b> for projector text size. Press <b>/</b> to search.</p></div>
+  ${sec('What is an Operating System?')}
+  ${concept({id:'what-is-os',badge:'OS',title:'Operating System (OS)',
+   def:'An <b>Operating System</b> is [[system software]] that acts as an <b>interface</b> between the user / application programs and the computer [[hardware]].',
+   why:'Hardware alone cannot do anything useful. Without an OS every programmer would have to control the CPU, memory and disk by hand. The OS hides that difficulty and lets many programs share one computer safely.',
+   how:'When you start the computer, the [[kernel]] is loaded into memory first. After that, applications request services through [[system call|system calls]]. The OS performs each request on the hardware and returns the result.',
+   diagram:DG.analogy(),
+   real:'<b>Building manager.</b> The building (computer) has rooms and equipment (hardware). People (applications) ask the manager for a room. The manager decides who gets which room and when, and keeps order. A visitor (user) just asks for what they need.',
+   comp:'You double-click Chrome. The OS loads Chrome into [[RAM]] and gives it CPU time. When you save a file, the OS writes it to disk. You never touch the hardware yourself.',
+   adv:['Makes the computer easy to use (windows, icons, files)','Shares CPU, memory and devices among many programs','Protects data and programs','Lets the same program run on different hardware'],
+   dis:['Uses some CPU, RAM and disk space itself','A bug in the OS can affect the whole system','Needs regular updates and patches','Some operating systems cost money to license'],
+   pts:['The OS is the first software loaded after the computer starts (after the bootloader).','It is system software, not application software.','Its core part is called the kernel.','It has two roles: <b>extended machine</b> (hides hardware difficulty) and <b>resource manager</b> (shares hardware).'],
+   more:'<p>Many textbooks describe two views of an OS. As an <b>extended machine</b>, it gives programmers simple things like "open a file" instead of dealing with disk sectors. As a <b>resource manager</b>, it keeps track of which program is using which resource and settles conflicts.</p><p>The OS is not the same as the whole software you see. The <b>shell</b> or desktop you click on is only the outer part; the kernel inside does the real management.</p>',
+   exam:'An <b>Operating System</b> is system software that manages computer hardware and software resources and provides common services for application programs. It acts as an interface between the user and the hardware.'})}
+  ${sec('Popular operating systems')}
+  <div class="grid3">
+   ${[['Windows','Microsoft','Most common on desktops and laptops. Famous for wide software and hardware support.',1],['Linux','Open-source community','Runs most servers, supercomputers and many embedded devices. Free to use and change.',2],['macOS','Apple','Runs on Mac computers. Known for smooth hardware and software integration.',5],['Android','Google (Linux-based)','The most used mobile OS. Built on the Linux kernel.',6],['iOS','Apple','Runs on iPhone. Shares its roots with macOS.',4]].map(o=>`<div class="card"><span class="chip">${o[1]}</span><h3 style="margin:.5rem 0 .3rem;color:var(--h${o[3]})">${o[0]}</h3><p style="margin:0">${o[2]}</p></div>`).join('')}
+  </div>
+  ${sec('Think of the CPU as a teacher')}
+  <div class="callout analogy"><span class="lab">Classroom analogy</span><p>Think of the CPU as a teacher and programs as students. If one student is writing an answer and does not need the teacher for a moment, the teacher can help another student. In the same way, the OS gives CPU time to another process when one process is waiting for I/O. The teacher is never idle, and every student gets help.</p></div>
+  ${sec('Mapping the analogy')}
+  ${cmpTable(['Building','Computer'],[['Building','The whole computer'],['Physical rooms and equipment','Hardware (CPU, RAM, disk, devices)'],['Building manager','Operating System'],['People using the building','Application programs'],['Person requesting services','User']],'Building analogy mapping')}`;
+}});
+
+CH.push({id:'goals',title:'Fundamental Goals of Operating System',short:'OS Goals',render(){
+  return `${chHead('Chapter 2','Fundamental Goals of Operating System','Why does an operating system exist? Six goals explain almost every design choice.')}
+  <div class="callout"><span class="lab">Start with a simple example</span><p>Imagine a shared school canteen. It must be easy to order (convenience), serve quickly (efficiency), share the counters fairly (resource management), keep the food safe (security), open every day (reliability) and add new items over time (evolution). An OS has the same six goals.</p></div>
+  ${sec('Interactive mind map')}
+  ${widget('hubinfo','goals')}
+  ${sec('The six goals in detail')}
+  <div class="grid3">${GOALS.map(g=>`<div class="card"><div class="row" style="gap:.6rem;color:var(--h${g.n})">${icon(g.ic,34)}<h3>${g.t.replace(/\n/g,' ')}</h3></div><p style="margin-top:.7rem"><span class="lab">Simple definition</span>${g.def}</p><p><span class="lab">Why it is required</span>${g.why}</p><p style="margin:0"><span class="lab">Real-world example</span>${g.ex}</p></div>`).join('')}</div>
+  ${sec('Diagram: goals tree')}
+  ${fig(900,250,(()=>{let o=bx(330,10,240,46,'OPERATING SYSTEM GOALS',0,{});[['Convenience',1],['Efficiency',2],['Resource\nManagement',3],['Security',4],['Reliability',5],['Evolution',6]].forEach((g,i)=>{const x=10+i*148;o+=`<path class="ln" d="M450 56V90H${x+65}V120" style="stroke:var(--muted)"/>`+bx(x,120,130,60,g[0],g[1],{sm:true})});return o+txt(450,225,'Each goal supports the main aim: a usable, safe and fast computer.','sm mut')})(),'All six goals grow from one purpose.','Tree diagram of operating system goals')}
+  ${detail('Convenience and efficiency can pull in opposite directions','<p>Making a system very convenient (fancy graphics, animations) often uses more resources. A <b>mobile OS</b> usually favours convenience; a <b>server OS</b> favours efficiency; a <b>real-time OS</b> favours reliability and timing. Designers choose the balance that suits the machine.</p>')}
+  <div class="callout exam" style="margin-top:1rem"><span class="lab">Exam-oriented summary</span><p>The fundamental goals of an OS are <b>convenience, efficiency, resource management, security and protection, reliability and the ability to evolve</b>.</p></div>`;
+}});
+
+CH.push({id:'services',title:'Operating System Services',short:'OS Services',render(){
+  return `${chHead('Chapter 3','Operating System Services','The OS offers eight kinds of help to programs and users.')}
+  <div class="callout"><span class="lab">Start with a simple example</span><p>A hotel gives guests many services: rooms, food, laundry, security and a bill at the end. Guests simply ask. An OS likewise offers services to programs, and programs simply ask.</p></div>
+  ${sec('Central diagram')}
+  ${widget('hubinfo','services')}
+  ${sec('Animated visual: User → OS → RAM → CPU → Application')}
+  ${widget('stepflow','svcflow')}
+  ${sec('Each service explained')}
+  <div class="grid2">${SERV.map((s,i)=>`<div class="card"><div class="row" style="gap:.6rem;color:var(--h${s.n})">${icon(s.ic,30)}<h3>${i+1}. ${s.t.replace(/\n/g,' ')}</h3></div><p style="margin-top:.6rem"><span class="lab">What it does</span>${s.what}</p><p><span class="lab">Example</span>${s.ex}</p><p style="margin:0"><span class="lab">Which OS component provides it</span>${s.comp}</p></div>`).join('')}</div>
+  ${sec('How programs ask for services')}
+  ${concept({id:'syscall',badge:'API',title:'System Call',
+   def:'A <b>[[system call]]</b> is the way a running program asks the operating system to do something for it.',
+   why:'Programs run in a restricted mode and must not touch hardware directly. The OS needs one controlled doorway so it can check every request.',
+   how:'The program puts the request number and details in registers, then executes a special instruction (a trap). The CPU switches to [[kernel mode]], the OS does the job, then returns to [[user mode]] with the result.',
+   diagram:fig(820,170,(()=>{let o=bx(10,50,170,64,'Application\nprint(file)',1,{sm:true})+arrow(184,82,246,82)+bx(250,50,170,64,'System call\ninterface (trap)',3,{sm:true})+arrow(424,82,486,82)+bx(490,50,150,64,'Kernel\nwrites to disk',5,{sm:true})+arrow(644,82,694,82)+bx(698,50,112,64,'Hardware',2,{sm:true});return o+txt(95,32,'User mode','sm mut')+txt(560,32,'Kernel mode','sm mut')+`<line x1="455" y1="20" x2="455" y2="150" class="ln dash" style="stroke:var(--muted)"/>`+txt(455,160,'mode switch','sm mut')})(),'A system call crosses from user mode into kernel mode.','System call flow'),
+   real:'A customer (program) cannot walk into the kitchen. They tell the waiter (system call) what they want, and the waiter brings it from the kitchen (kernel).',
+   comp:'In C, <code>printf()</code> eventually calls the system call <code>write()</code> on Linux or <code>NtWriteFile</code> on Windows.',
+   adv:['Keeps hardware safe from careless programs','One clear, checked entry into the OS','Programs stay portable across hardware'],
+   dis:['Switching modes costs a little time','Too many calls can slow a program'],
+   pts:['Types: process control, file management, device management, information, communication.','Programmers usually use library functions or an API that wrap system calls.'],
+   exam:'A <b>system call</b> is a programmatic request by a user program to the kernel of the operating system for a service that needs privileged access.'})}`;
+}});
+
+/* ---- Chapter 4: types ---- */
+CH.push({id:'types',title:'Types of Operating Systems',short:'Types of OS',render(){
+  return `${chHead('Chapter 4','Types of Operating Systems','Six common kinds of OS, grouped by how they run programs and what they are built for.')}
+  <div class="callout"><span class="lab">Start with a simple example</span><p>Vehicles come in types too: a bus carries many people on a fixed route, an ambulance must arrive on time, a tractor does one job. Likewise, each OS type is built for a different need.</p></div>
+  ${sec('Quick overview')}
+  ${cmpTable(['Type','Main idea','Typical example'],[
+   ['<a href="#multiprog" data-go="types" data-an="multiprog">Multiprogramming</a>','Several programs in RAM; CPU switches when one waits for I/O','Early batch systems, mainframes'],
+   ['<a href="#timeshare" data-go="types" data-an="timeshare">Time-sharing</a>','CPU time split into small slices for many users','Unix servers, Linux terminals'],
+   ['<a href="#rtos" data-go="types" data-an="rtos">Real-time</a>','Must respond within a fixed time limit','Airbag controller, FreeRTOS, VxWorks'],
+   ['<a href="#multithread" data-go="types" data-an="multithread">Multithreading</a>','One process runs several threads at once','Modern Windows, Linux, macOS'],
+   ['<a href="#distributed" data-go="types" data-an="distributed">Distributed</a>','Many computers act as one system','Cluster and cloud platforms'],
+   ['<a href="#embedded" data-go="types" data-an="embedded">Embedded</a>','Small OS inside one dedicated device','Smart TV, router, washing machine']],'Overview of OS types')}
+  ${sec('A. Multiprogramming Operating System')}
+  ${concept({id:'multiprog',badge:'A',title:'Multiprogramming Operating System',
+   def:'Many programs are kept in main memory at the same time. The CPU switches from one program to another so it is never idle.',
+   why:'Reading from a disk or typing on a keyboard is very slow compared with the CPU. A single program would leave the CPU waiting most of the time.',
+   how:'The OS loads several jobs into RAM. When the running job needs I/O, the OS starts another ready job on the CPU. When the I/O finishes, the first job becomes ready again.',
+   diagram:`<figure class="fig narrow">${fig(520,330,(()=>{let o=bx(20,10,260,34,'RAM (main memory)',0,{sm:true,rx:6});[['Program A',1],['Program B',4],['Program C',6],['Program D',3]].forEach((p,i)=>{o+=bx(20,54+i*54,260,44,p[0],p[1],{sm:true})});o+=arrow(282,152,370,152)+bx(374,115,130,74,'CPU\nswitches between\nprograms',2,{sm:true});return o+txt(150,288,'All programs stay in memory','sm mut')})(),'Programs A–D stay in RAM; the CPU switches between them.','Multiprogramming memory diagram').replace(/<\/?figure[^>]*>/g,'')}</figure>
+   ${widget('multiprog','mp')}`,
+   real:'A teacher marks one student\'s paper. While that student rewrites a page, the teacher starts checking the next student. The teacher is never idle.',
+   comp:'While one program waits for data from the disk, the CPU executes another program.',
+   adv:['Better CPU utilization','Higher throughput (more jobs finished per hour)','Several programs stay active at once'],
+   dis:['More complex memory management','CPU scheduling is required','Programs must be protected from each other'],
+   pts:['Goal: keep the CPU busy.','Number of programs in memory is the <b>degree of multiprogramming</b>.','It is not interactive by itself; time-sharing adds that.'],
+   more:'<p>Multiprogramming is about <b>keeping the CPU busy</b>. Multitasking and time-sharing extend the idea by also switching on a timer, so users see quick responses. Every time-sharing OS is multiprogrammed, but not every multiprogrammed OS is time-sharing.</p>',
+   exam:'A <b>multiprogramming operating system</b> keeps several programs in main memory at the same time, and the CPU executes one of them while the others wait for I/O, thereby increasing CPU utilization.'})}
+  ${sec('B. Time-Sharing Operating System')}
+  ${concept({id:'timeshare',badge:'B',title:'Time-Sharing Operating System',
+   def:'CPU time is divided into very small [[time slice|time slices]]. Each user or process gets one slice in turn, so everyone feels the computer is theirs.',
+   why:'Users want quick replies when they type or click. Waiting for one long job to finish would feel broken.',
+   how:'A timer interrupts the CPU after each slice. The scheduler saves the running process, picks the next one and restores it. This save-and-restore step is a [[context switch]].',
+   diagram:`${DG.users()}
+   ${fig(860,120,(()=>{let o='';['Process A','Process B','Process C','Process A','Process B'].forEach((p,i)=>{const c=[1,4,6,1,4][i];o+=bx(20+i*164,40,156,50,p,c,{sm:true})});return o+txt(430,22,'CPU timeline: one time slice each','ttl')+txt(430,112,'time →','sm mut')})(),'The CPU timeline: A | B | C | A | B','Time sharing timeline')}
+   ${widget('rr','rr')}`,
+   real:'A tutor gives each student five minutes in turn. Everyone gets help quickly, and nobody waits an hour.',
+   comp:'A Linux server lets many users log in over SSH at the same time. Each one feels the machine responds immediately.',
+   adv:['Quick response time (interactive)','Many users can share one computer','CPU idle time is reduced'],
+   dis:['Context switching adds overhead','Needs protection and security between users','Too many users make everyone slower'],
+   pts:['<b>Time slice (quantum)</b>: usually a few milliseconds.','<b>Context switch</b>: saving one process and loading another.','Interactive computing: the user gets responses while the program runs.'],
+   exam:'A <b>time-sharing operating system</b> allows many users to share the CPU simultaneously by allocating a small time slice to each process in turn, giving the illusion that each user has a dedicated computer.'})}
+  ${sec('C. Real-Time Operating System (RTOS)')}
+  ${concept({id:'rtos',badge:'C',title:'Real-Time Operating System',
+   def:'A [[RTOS|real-time OS]] must respond to an event <b>within a fixed time limit</b> (the deadline). A right answer that arrives late is a wrong answer.',
+   why:'Some machines control the real world: a car airbag, a pacemaker, a robot arm. A delay of a few milliseconds can hurt people or damage equipment.',
+   how:'It uses priority-based scheduling and very short, predictable delays. The highest-priority task always runs first and can interrupt others.',
+   diagram:`${fig(880,170,(()=>{return bx(10,10,420,100,'HARD REAL-TIME\nDeadline MUST be met.\nMissing it is a failure.',4,{sm:true})+bx(450,10,420,100,'SOFT REAL-TIME\nDeadline is important, but an\noccasional delay is acceptable.',2,{sm:true})+txt(220,140,'Airbag · pacemaker · flight control','sm mut')+txt(660,140,'Video call · online game · music streaming','sm mut')})(),'Hard and soft real-time systems.','Hard versus soft real-time')}
+   ${fig(820,110,bx(10,25,200,60,'EVENT\n(crash sensor fires)',1,{sm:true})+arrow(214,55,296,55)+bx(300,25,200,60,'PROCESSING\n(decide, act)',3,{sm:true})+arrow(504,55,586,55)+bx(590,25,220,60,'DEADLINE\n(airbag opens in 10 ms)',4,{sm:true}),'EVENT → PROCESSING → DEADLINE','Event processing deadline timeline')}
+   ${widget('rtos','rt')}`,
+   real:'A goalkeeper must dive before the ball crosses the line. Diving a second later is the same as not diving.',
+   comp:'A car airbag controller reads the crash sensor and must inflate the airbag within milliseconds.',
+   adv:['Predictable and fast response','High reliability for critical tasks','Efficient use of resources'],
+   dis:['Fewer features and less multitasking','Difficult and costly to design and test','Lower-priority tasks may be starved'],
+   pts:['<b>Hard</b>: missing the deadline is a disaster. <b>Soft</b>: a late result only lowers quality.','Real-time does not mean "very fast". It means <b>predictable</b>.','Examples: airbag system, industrial control, medical equipment, robotics, aircraft systems.'],
+   more:'<p>Important RTOS measures are <b>latency</b> (delay before reacting), <b>jitter</b> (variation in that delay) and <b>determinism</b> (same result in the same time every time). Common RTOS products include FreeRTOS, VxWorks, QNX and Zephyr.</p>',
+   exam:'A <b>real-time operating system</b> is an OS designed to process data and respond to events within a strictly defined time limit. It may be hard real-time or soft real-time.'})}
+  ${sec('D. Multithreading Operating System')}
+  ${concept({id:'multithread',badge:'D',title:'Multithreading Operating System',
+   def:'A [[process]] can contain several [[thread|threads]] that run independently, at the same time, inside the same memory space.',
+   why:'One program often has several jobs: draw the screen, fetch data, play sound. Doing them one after another makes the program feel frozen.',
+   how:'The OS creates threads that share the process\'s code, data and files, but each thread has its own registers and stack. The scheduler can run them on different CPU cores.',
+   diagram:`${DG.thread()}
+   ${cmpTable(['Feature','Process','Thread'],[['Memory','Separate memory for each process','Shared with other threads of the same process'],['Creation cost','Higher (heavier)','Lower (lighter)'],['Communication','IPC needed (pipes, messages)','Easy, through shared memory'],['If one fails','Others usually survive','May crash the whole process'],['Switching','Slower','Faster']],'Process versus thread')}`,
+   real:'A restaurant (process) has a chef, a waiter and a cashier (threads). They share the same kitchen and till, but each does a different job at the same time.',
+   comp:'A web browser has one thread for the user interface, one for the network and one for rendering the page. The page keeps scrolling while images load.',
+   adv:['Responsive programs','Cheap to create and switch','Shared memory makes communication easy','Uses multi-core CPUs well'],
+   dis:['Shared data can cause race conditions','Bugs are harder to find','One bad thread can crash the whole process'],
+   pts:['A thread is called a <b>lightweight process</b>.','Threads of one process share code, data and files.','Each thread has its own program counter, registers and stack.'],
+   exam:'A <b>multithreading operating system</b> supports the execution of multiple threads within a single process, where threads share the process resources but execute independently.'})}
+  ${sec('E. Distributed Operating System')}
+  ${concept({id:'distributed',badge:'E',title:'Distributed Operating System',
+   def:'A [[distributed OS]] manages many connected computers and makes them look like <b>one single system</b> to the user.',
+   why:'One computer has limits. Joining many computers gives more power, shared resources, and safety if one machine fails.',
+   how:'Each computer has its own CPU and memory, joined by a network. The OS spreads work across them, keeps files in sync, and lets machines talk by messages.',
+   diagram:DG.distributed(),
+   real:'A group of delivery vans run by one control room. The customer just asks for a parcel and does not care which van brings it.',
+   comp:'A cluster or cloud platform that runs your job on whichever machine is free, and moves it if a machine breaks.',
+   adv:['<b>Resource sharing</b> across machines','<b>Load balancing</b> spreads the work','<b>Fault tolerance</b>: one failure does not stop everything','Easy to grow by adding computers'],
+   dis:['Complex to design and manage','Network delays and failures','Security is harder across many machines'],
+   pts:['<b>Communication</b> is by message passing over a network.','Users do not need to know where a file or job really lives (transparency).','Used in clusters, grids and cloud data centres.'],
+   exam:'A <b>distributed operating system</b> manages a group of independent, networked computers and makes them appear to users as a single coherent system.'})}
+  ${sec('F. Embedded Operating System')}
+  ${concept({id:'embedded',badge:'F',title:'Embedded Operating System',
+   def:'An [[embedded OS]] is a small operating system built for <b>one dedicated device</b> or one specific function.',
+   why:'A washing machine does not need a full desktop OS. A small OS is cheaper, faster to start, uses little memory and power, and is easier to make reliable.',
+   how:'It is stored in ROM or flash memory inside the device. It reads sensors, runs the control program, and drives actuators such as motors and displays.',
+   diagram:DG.embedded(),
+   real:'A pocket calculator does one job very well, with no extra features to confuse or break it.',
+   comp:'Smart TV, washing machine, router, ATM, car control system, IoT device.',
+   adv:['Small size and low memory use','Low power and low cost','Fast start-up','Highly reliable for its one job'],
+   dis:['Hard to upgrade or change','Limited features','Needs special tools to develop and debug'],
+   pts:['Often combined with real-time features.','Examples: Embedded Linux, FreeRTOS, Android Things, VxWorks.','Users usually cannot install new programs.'],
+   exam:'An <b>embedded operating system</b> is a specialised OS designed to run on a dedicated device with limited resources, performing a specific set of tasks.'})}`;
+}});
+
+/* ---- Chapter 5: structure ---- */
+CFG.layered={w:640,gap:14,role:'Layer',label:'Layered operating system architecture',cap:'Each layer uses only the layer just below it.',hint:'Click a layer.',start:null,layers:[
+ {t:'Layer 5: User Applications',n:1,h:46,info:'Programs the user runs. They use the services of the layer below.',ex:'Browser, editor.'},
+ {t:'Layer 4: File System',n:2,h:46,info:'Organizes data into files and folders. It uses I/O management to reach the disk.',ex:'Save, open, delete files.'},
+ {t:'Layer 3: I/O Management',n:3,h:46,info:'Controls devices and buffers data between devices and memory.',ex:'Keyboard, disk, printer.'},
+ {t:'Layer 2: Memory Management',n:4,h:46,info:'Allocates memory to processes and keeps them apart.',ex:'Paging, virtual memory.'},
+ {t:'Layer 1: CPU / Process Management',n:5,h:46,info:'Schedules processes and switches the CPU between them.',ex:'Scheduler, context switch.'},
+ {t:'Layer 0: Hardware',n:0,h:46,info:'The physical machine. Only the lowest layer touches it directly.',ex:'CPU, RAM, disk.'}]};
+CFG.mono={w:640,gap:22,role:'Part',label:'Monolithic kernel architecture',cap:'Everything inside the big kernel box runs in kernel mode.',hint:'Click a part.',layers:[
+ {t:'Applications',n:1,h:46,info:'User programs running in user mode.',ex:'Shell, browser.'},
+ {t:'System Call Interface',n:3,h:46,info:'The doorway into the kernel. Every request enters here.',ex:'open(), read(), fork().'},
+ {t:'MONOLITHIC KERNEL (kernel mode)',n:5,subs:['Process\nMgmt','Memory\nMgmt','File\nSystem','Device\nDrivers','Networking'],subH:104,info:'All major OS services live in one large program sharing one address space. Parts call each other directly, which is fast. A bug in any part can bring down the whole kernel.',ex:'Linux kernel.'},
+ {t:'Hardware',n:0,h:46,info:'CPU, memory, disk and devices.'}]};
+CFG.micro={w:640,gap:22,role:'Part',label:'Microkernel architecture',cap:'Only essential services stay inside the kernel.',hint:'Click a part.',layers:[
+ {t:'Applications',n:1,h:46,info:'User programs. They talk to servers by messages.',ex:'Browser, editor.'},
+ {t:'USER SPACE (servers run like normal programs)',n:2,subs:['File\nServer','Device\nDriver','Network\nServer','Other\nServices'],subH:104,info:'Services such as file system and drivers run outside the kernel, as ordinary user-mode processes. If one crashes, it can be restarted without crashing the whole system.',ex:'MINIX 3, QNX, L4.'},
+ {t:'MICROKERNEL (kernel mode)',n:5,subs:['IPC','CPU\nScheduling','Basic Memory\nMgmt'],subH:104,info:'The tiny core: message passing (IPC), CPU scheduling and basic memory management. Keeping it small makes it easier to check and more reliable.'},
+ {t:'Hardware',n:0,h:46,info:'CPU, memory, disk and devices.'}]};
+CH.push({id:'structure',title:'Operating System Structure',short:'OS Structure',render(){
+  return `${chHead('Chapter 5','Operating System Structure','An OS is huge. How its parts are arranged decides its speed, safety and ease of change.')}
+  <div class="callout"><span class="lab">Why do we need an OS structure?</span><p>A big school building needs a plan: classrooms, labs, offices. Without a plan it becomes a maze. In the same way, millions of lines of OS code need a clear structure so that people can understand, fix and extend it. The three classic designs are <b>layered</b>, <b>monolithic</b> and <b>microkernel</b>.</p></div>
+  ${sec('A. Layered Operating System')}
+  ${concept({id:'layered',badge:'A',title:'Layered Operating System',
+   def:'The OS is built as a stack of layers. Each layer provides services to the layer above and uses the services of the layer below.',
+   why:'Dividing a large problem into small levels makes the system easier to build, test and understand.',
+   how:'Layer 0 is the hardware. Each higher layer is built only on the layers beneath it. A request travels down through the layers, and the answer travels back up.',
+   diagram:widget('stackinfo','layered'),
+   real:'A burger shop: the customer orders at the counter, the counter passes it to the kitchen, the kitchen uses ingredients from the store. Each stage talks only to the next.',
+   comp:'The THE operating system (Dijkstra) and parts of modern systems such as network protocol stacks use layering.',
+   adv:['Easy to understand','Easier debugging: test one layer at a time','Better modularity'],
+   dis:['Performance overhead because requests pass through many layers','Defining the layers correctly can be difficult'],
+   pts:['A layer can only use layers below it.','Pure layered OS designs are rare today; layering is used inside other designs.'],
+   exam:'In a <b>layered operating system</b>, the OS is divided into a number of layers, where each layer is built on top of lower layers. The bottom layer (layer 0) is the hardware and the highest layer is the user interface.'})}
+  ${sec('B. Monolithic Operating System')}
+  ${concept({id:'monolithic',badge:'B',title:'Monolithic Operating System',
+   def:'All major OS services run inside <b>one large kernel</b> in kernel mode, sharing one memory space.',
+   why:'Direct function calls between parts are very fast, and the design is simple to start with.',
+   how:'Applications use the system call interface to enter the kernel. Process management, memory management, file system, device drivers and networking are all part of that same kernel program.',
+   diagram:widget('stackinfo','mono'),
+   real:'A small shop where one person is cashier, cook and cleaner. Everything is quick because there is no hand-over, but if that person falls ill, the shop closes.',
+   comp:'<b>Linux</b> is the most important case study. It is monolithic but modular (loadable kernel modules). Traditional UNIX and early MS-DOS were also simple monolithic systems.',
+   adv:['High performance','Direct communication between components'],
+   dis:['Large kernel','Difficult maintenance','One kernel failure can affect the whole system'],
+   pts:['Everything runs in kernel mode.','Modern monolithic kernels such as Linux use <b>modules</b> to add or remove drivers without rebooting.'],
+   exam:'A <b>monolithic kernel</b> is an OS architecture in which the entire operating system works in kernel space as a single large program, with all services tightly integrated.'})}
+  ${sec('C. Microkernel Operating System')}
+  ${concept({id:'microkernel',badge:'C',title:'Microkernel Operating System',
+   def:'Only the <b>essential services</b> stay inside the kernel. Everything else runs in user space as separate servers.',
+   why:'Less code in kernel mode means fewer places for a fatal bug, and services can be replaced or restarted independently.',
+   how:'The microkernel offers inter-process communication (IPC), CPU scheduling and basic memory management. A file server or device driver is a normal process; programs reach it by sending messages through the microkernel.',
+   diagram:widget('stackinfo','micro'),
+   real:'A manager who only hands out jobs and passes notes. Specialists do the real work in their own offices. If one specialist is sick, only that office closes.',
+   comp:'MINIX 3, QNX and L4 are microkernel systems. Mach, the base of macOS, started as a microkernel.',
+   adv:['Better modularity','Better reliability','Easier maintenance','Better isolation'],
+   dis:['Communication overhead (messages)','More context switches between user and kernel mode'],
+   pts:['Policy runs in user space; only mechanism stays in the kernel.','Often slower than monolithic if the message passing is not optimised.'],
+   exam:'A <b>microkernel</b> is a minimal kernel that provides only basic services such as IPC, scheduling and basic memory management, while other OS services run as user-space processes.'})}
+  ${sec('Comparison diagram: monolithic kernel versus microkernel')}
+  ${DG.monoVsMicro()}`;
+}});
+/* ---- Chapter 6: comparison of structures ---- */
+CH.push({id:'compare',title:'Comparison of OS Structures',short:'Compare Structures',render(){
+  const T=(a,b)=>`<span class="tip" tabindex="0" data-tip="${esc(b)}">${a}</span>`;
+  return `${chHead('Chapter 6','Comparison of OS Structures','Layered, monolithic and microkernel designs side by side. Hover over the labels for hints.')}
+  ${cmpTable(['Feature','Layered','Monolithic','Microkernel'],[
+   [T('Architecture','How the parts are arranged'),'Stack of layers; each uses the one below','One large kernel with all services inside','Small kernel; services run in user space'],
+   [T('Performance','Speed of normal operation'),dots(2,1)+'Slower: requests pass through layers',dots(5)+'Fastest: direct calls inside the kernel',dots(3)+'Moderate: message passing costs time'],
+   [T('Security','Isolation of faults and attacks'),dots(3)+'Fair: layers give some protection',dots(2,1)+'Lower: a kernel bug exposes everything',dots(4)+'Better: small trusted core, isolated servers'],
+   [T('Modularity','How easily parts can be separated'),dots(4)+'Good',dots(2,1)+'Limited (modules help)',dots(5)+'Excellent'],
+   [T('Complexity','How hard to design and understand'),dots(3)+'Moderate, but layering is hard to define',dots(2,1)+'Grows large and tangled over time',dots(3)+'Simple core, but many cooperating servers'],
+   [T('Maintenance','How easy to fix and update'),dots(4)+'Easy to debug layer by layer',dots(2,1)+'Hard: everything is connected',dots(5)+'Easy: replace a server without a reboot'],
+   [T('Examples','Real systems'),'THE OS; layered ideas inside protocol stacks and parts of other systems','Linux, traditional UNIX, early MS-DOS','MINIX 3, QNX, L4; Mach (core of macOS)']
+  ],'Comparison of OS structures')}
+  <div class="callout warn" style="margin-top:1rem"><span class="lab">Do not take the dots as final marks</span><p>The dots are a rough guide, not scores. Real operating systems <b>mix approaches</b>. Linux is monolithic but modular. Windows NT and macOS (XNU) are <b>hybrid</b> designs that keep some services in the kernel for speed while borrowing microkernel ideas. Layering is used inside almost all of them. Performance also depends on how well the code is written, not only on the structure.</p></div>
+  ${sec('See the trade-off')}
+  ${DG.monoVsMicro()}`;
+}});
+
+/* ---- Chapter 7: Linux ---- */
+CFG.linuxarch={w:660,gap:24,role:'Layer',label:'Linux architecture',cap:'The Linux system from user to hardware.',hint:'Click a layer.',layers:[
+ {t:'User Applications',n:1,h:46,info:'Programs you run: browser, LibreOffice, VS Code, games.',ex:'firefox, gcc, vim.'},
+ {t:'Shell / GUI',n:5,h:46,info:'The program you talk to. The <b>shell</b> (bash, zsh) takes typed commands. A desktop (GNOME, KDE) gives windows and icons.',ex:'Terminal, GNOME desktop.'},
+ {t:'System Libraries (glibc)',n:3,h:46,info:'Ready-made functions that applications call. They turn friendly function calls into system calls for the kernel.',ex:'printf() calls write().'},
+ {t:'Linux Kernel',n:2,h:46,info:'The core. Manages the CPU, memory, files, devices and network, and enforces security.',ex:'vmlinuz on your disk.'},
+ {t:'Hardware',n:0,h:46,info:'CPU, RAM, storage and devices.'}]};
+CFG.linuxkernel={h:440,rx:300,ry:150,nw:170,center:'LINUX\nKERNEL',role:'Kernel part',label:'Linux kernel components',hint:'Click a component of the Linux kernel.',items:[
+ {t:'Process\nManagement',n:1,ic:'program',info:'Creates and ends processes (fork, exec, exit) and schedules them on the CPU. Newer kernels use the EEVDF scheduler; older ones used CFS.'},
+ {t:'Memory\nManagement',n:2,ic:'resource',info:'Gives each process its own virtual address space, uses paging and swap, keeps a page cache of recent file data, and can kill a process (the OOM killer) when memory runs out.'},
+ {t:'File System',n:3,ic:'file',info:'The Virtual File System (VFS) gives one common interface to many file systems such as ext4, XFS and Btrfs.'},
+ {t:'Device\nDrivers',n:4,ic:'io',info:'Code that talks to hardware. Most drivers are loadable modules. Devices appear as files under /dev.'},
+ {t:'Networking',n:5,ic:'comm',info:'Implements the TCP/IP stack and sockets, plus the firewall framework (netfilter, used by iptables and nftables).'},
+ {t:'Security',n:6,ic:'security',info:'User and group permissions, capabilities, and security modules such as SELinux and AppArmor.'}]};
+const DISTROS=[['Ubuntu','Debian family','Friendly and popular. Good first Linux for students, desktops and cloud servers.',1],['Fedora','Red Hat family','Fast to adopt new technology. Sponsored by Red Hat.',2],['Debian','Independent','Very stable and community run. Many other distributions are built on it.',4],['Arch Linux','Independent','Minimal, rolling release, you build it your way. For advanced users.',5],['Linux Mint','Ubuntu / Debian based','Familiar desktop, easy for people moving from Windows.',6]];
+CH.push({id:'linux',title:'Case Study: Linux',short:'Linux',render(){
+  return `${chHead('Chapter 7 · Case Study','Linux','A free, open-source operating system that powers servers, phones (Android) and supercomputers.')}
+  <div class="callout"><span class="lab">Start with a simple example</span><p>Linux is like a recipe that is published for everyone. Anybody can read it, improve it and cook their own version. Ubuntu, Fedora and others are different "dishes" made from the same base.</p></div>
+  ${sec('Architecture diagram')}
+  ${widget('stackinfo','linuxarch')}
+  ${sec('Linux kernel visual')}
+  ${widget('hubinfo','linuxkernel')}
+  ${sec('Linux explained')}
+  ${concept({id:'linux-os',badge:'LX',title:'Linux',
+   def:'<b>Linux</b> is a free, open-source, UNIX-like operating system. Strictly speaking, Linux is the [[kernel]]; with GNU tools and other software it becomes a complete system.',
+   why:'In 1991 Linus Torvalds wanted a free UNIX-like kernel for his PC. Developers all over the world joined in, and it grew into the base of most servers and Android phones.',
+   how:'The kernel runs in kernel mode and manages hardware. Users work through a [[shell]] or desktop. Programs call library functions that make system calls into the kernel. Everything is treated as a file (devices, even running processes).',
+   diagram:'',
+   real:'A public library: everyone can read the books (source code), suggest corrections and make their own copy.',
+   comp:'A web server running Ubuntu, a Raspberry Pi running Raspberry Pi OS, an Android phone, and the world\'s fastest supercomputers all use the Linux kernel.',
+   adv:['Free and open source','Stable, secure and fast','Highly customisable','Huge community and many distributions','Runs on everything from tiny devices to supercomputers'],
+   dis:['Fewer commercial desktop applications and games','Many choices can confuse beginners','Hardware support and driver quality can vary','Command-line knowledge often helps'],
+   pts:['Monolithic kernel with loadable modules.','Released under the GNU GPL licence (kernel: GPLv2).','Strong multi-user and multitasking design.'],
+   exam:'<b>Linux</b> is an open-source, multi-user, multitasking, UNIX-like operating system whose kernel was created by Linus Torvalds in 1991 and is released under the GNU General Public License.'})}
+  ${sec('Topic by topic')}
+  ${detail('What is Linux?','<p>Linux is an operating system kernel started by <b>Linus Torvalds</b> in 1991 and now developed by thousands of people and companies. It follows the design ideas of UNIX but contains no UNIX source code.</p>',true)}
+  ${detail('Linux kernel','<p>The kernel is the heart. It runs first, controls the CPU and memory, talks to devices through drivers, and offers system calls to programs. It is a <b>monolithic</b> kernel, but you can load or unload drivers as <b>modules</b> while it runs (for example with <code>modprobe</code>).</p>')}
+  ${detail('GNU/Linux concept','<p>The <b>GNU Project</b> (started by Richard Stallman in 1983) built many tools: compiler (gcc), shell (bash), core utilities (ls, cp, cat). The Linux kernel completed the missing piece. Together they form a full system, which is why some people call it <b>GNU/Linux</b>.</p><p><b>Kernel + GNU tools + extra software = a Linux distribution.</b></p>')}
+  ${detail('Linux distributions',`<p>A <b>distribution (distro)</b> packages the kernel with tools, a desktop, and a package manager.</p><div class="grid3">${DISTROS.map(d=>`<div class="card"><h4 style="color:var(--h${d[3]})">${d[0]}</h4><span class="chip">${d[1]}</span><p style="margin:.5rem 0 0">${d[2]}</p></div>`).join('')}</div>`)}
+  ${detail('Kernel architecture','<p>See the kernel visual above. Main parts: <b>process management, memory management, file system (VFS), device drivers, networking and security</b>. They share one address space (monolithic) and communicate by direct function calls.</p>')}
+  ${detail('Linux features','<ul class="pts"><li>Multi-user and multitasking</li><li>Portable: runs on x86, ARM, RISC-V and more</li><li>Open source: anyone can read and change the code</li><li>Hierarchical file system with one root <code>/</code></li><li>Powerful shell and scripting</li><li>Built-in networking and security</li></ul>')}
+  ${detail('Linux file system','<p>Everything starts at the root <code>/</code>. There are no drive letters.</p>'+cmpTable(['Folder','Purpose'],[['/','Root of the whole tree'],['/home','Personal files of users'],['/etc','Configuration files'],['/bin, /usr/bin','Commands and programs'],['/var','Logs and changing data'],['/dev','Devices shown as files'],['/proc','Live information about processes'],['/tmp','Temporary files'],['/boot','Kernel and boot files']],'Linux folders')+'<p style="margin-top:.7rem">Common file systems: <b>ext4</b> (default on many distros), <b>XFS</b>, <b>Btrfs</b>.</p>')}
+  ${detail('Linux process management','<p>Each running program is a <b>process</b> with a unique <b>PID</b>. New processes are created with <code>fork()</code> (copy the parent) and <code>exec()</code> (load a new program). The scheduler shares CPU time by priority and fairness. Use <code>ps</code> and <code>top</code> to see processes and <code>kill</code> to stop one.</p>')}
+  ${detail('Linux memory management','<p>Every process sees its own <b>virtual memory</b>. The kernel maps it to real RAM in small blocks called <b>pages</b>. When RAM is full, rarely used pages move to <b>swap</b> on disk. A <b>page cache</b> keeps recent file data in RAM to speed things up.</p>')}
+  ${detail('Linux security','<ul class="pts"><li>Users and groups; each file has read/write/execute permissions for owner, group and others</li><li><b>root</b> is the administrator; ordinary users use <code>sudo</code> when needed</li><li>Optional modules: <b>SELinux</b>, <b>AppArmor</b></li><li>Open source code can be inspected by many reviewers</li></ul>')}
+  ${detail('Linux networking','<p>The TCP/IP stack is inside the kernel. Programs use <b>sockets</b>. The firewall framework <b>netfilter</b> (managed with iptables or nftables) filters packets. Tools: <code>ip</code>, <code>ping</code>, <code>ssh</code>. Linux is widely used for web servers and routers.</p>')}
+  ${sec('Linux commands: try them')}
+  ${widget('linuxterm','lt')}
+  ${cmpTable(['Command','Meaning'],LCMD.map(c=>['<code>'+c[0]+'</code>',c[1]]),'Linux commands')}`;
+}});
+
+/* ---- Chapter 8: Windows ---- */
+const WIN_INFO={name:'Windows 11 2026 Update',version:'26H2',released:'29–30 September 2026 (phased rollout)',verified:'4 October 2026',delivery:'A small enablement package for devices already on Windows 11 24H2 or 25H2 (same platform, one restart)',support:'Home and Pro: 24 months. Enterprise and Education: 36 months.',source:'Microsoft Windows Experience Blog, “How to get the Windows 11 2026 Update” (29 Sep 2026), cross-checked with press coverage',url:'https://blogs.windows.com/windowsexperience/2026/09/29/how-to-get-windows-11-2026-update/',check:'https://learn.microsoft.com/en-us/windows/release-health/windows11-release-information'};
+CFG.winarch={w:700,gap:20,role:'Layer',label:'Windows architecture',cap:'Windows separates user mode from kernel mode.',hint:'Click a layer.',layers:[
+ {t:'User Applications',n:1,h:44,info:'Programs such as Edge, Word and games. They run in user mode with limited rights.'},
+ {t:'Windows APIs (Win32, .NET, WinRT)',n:3,h:44,info:'Documented functions that programs call to get OS services.',ex:'CreateFile(), CreateProcess().'},
+ {t:'USER MODE: subsystem DLLs and Windows services',n:2,h:60,info:'Libraries such as kernel32.dll and ntdll.dll plus background <b>services</b> (run by the Service Control Manager, often inside svchost.exe). If something here fails, the rest of Windows usually survives.'},
+ {t:'System Call Interface (ntdll.dll → kernel)',n:5,h:44,info:'The controlled doorway. A system call switches the CPU from user mode to kernel mode.'},
+ {t:'KERNEL MODE',n:4,subs:['Executive','Kernel','Device\nDrivers','HAL'],subH:104,info:'<b>Executive</b>: high-level managers (process, memory, I/O, security, Plug and Play). <b>Kernel</b>: low-level scheduling and interrupts. <b>Device drivers</b>: talk to hardware. <b>HAL</b> (Hardware Abstraction Layer): hides hardware differences. Kernel-mode code can touch everything, so a faulty driver can cause a blue screen.'},
+ {t:'Hardware',n:0,h:44,info:'CPU, memory, disk and devices.'}]};
+CH.push({id:'windows',title:'Case Study: Current Windows OS',short:'Windows',render(){
+  const w=WIN_INFO;
+  return `${chHead('Chapter 8 · Case Study','Latest Windows Operating System','Microsoft Windows: the most widely used desktop operating system.')}
+  <div class="card" style="border-width:2px"><span class="lab">Current Windows release</span>
+   <div class="verify"><div><div class="stat">${w.name}</div><div>Version <b>${w.version}</b></div></div><span class="pill">Last verified: ${w.verified}</span></div>
+   <div class="grid2" style="margin-top:.8rem"><div><span class="lab">Released</span>${w.released}</div><div><span class="lab">How it arrives</span>${w.delivery}</div><div><span class="lab">Support period</span>${w.support}</div><div><span class="lab">Source</span>${w.source}. <a href="${w.url}" target="_blank" rel="noopener">Microsoft announcement</a></div></div>
+   <div class="callout warn" style="margin-top:.8rem"><span class="lab">Check before you teach</span><p>Versions change every year, and this page cannot check Microsoft live. Please confirm the current version on Microsoft's official release health page: <a href="${w.check}" target="_blank" rel="noopener">learn.microsoft.com, Windows 11 release information</a>. A lecturer can update the details in one place (the <code>WIN_INFO</code> object in this file).</p></div></div>
+  ${sec('Windows architecture')}
+  ${widget('stackinfo','winarch')}
+  ${sec('Windows explained')}
+  ${concept({id:'windows-os',badge:'WN',title:'Microsoft Windows',
+   def:'<b>Windows</b> is a family of proprietary operating systems from Microsoft. Modern Windows is built on the <b>Windows NT</b> kernel and offers a graphical desktop for PCs, laptops and servers.',
+   why:'It gave ordinary people an easy graphical way to use PCs, and a huge range of software and hardware works with it.',
+   how:'Applications call Windows APIs. These reach the kernel through the system call interface. In kernel mode, the Executive managers, the kernel, drivers and the HAL manage the hardware.',
+   diagram:'',
+   real:'A large office building with a reception (APIs), staff-only floors (kernel mode) and a security guard (UAC and Defender).',
+   comp:'A school lab PC running Windows 11: you sign in, open Word, plug in a USB drive, and Windows loads the right driver automatically.',
+   adv:['Largest software and game library on desktops','Wide hardware support','Familiar, easy interface','Strong business and management tools'],
+   dis:['Commercial licence','A frequent target of malware because it is so common','Updates can interrupt work','Heavier on resources than some alternatives'],
+   pts:['Kernel: Windows NT (hybrid design).','Two modes: user mode and kernel mode.','Main file system: NTFS.','Configuration data is stored in the Registry.'],
+   exam:'<b>Windows</b> is a graphical, multitasking, proprietary operating system developed by Microsoft, based on the NT kernel, which separates execution into user mode and kernel mode.'})}
+  ${sec('Topic by topic')}
+  ${detail('Windows overview','<p>Windows runs on PCs, tablets, servers (Windows Server) and some devices. Today the main desktop line is <b>Windows 11</b>. It supports many hardware makers and a very large library of software.</p>',true)}
+  ${detail('Windows kernel','<p>The <b>NT kernel</b> handles low-level jobs: thread scheduling, interrupts, and synchronization. It sits below the <b>Executive</b>, which provides services such as the Object Manager, Process Manager, Memory Manager, I/O Manager and the Security Reference Monitor. The design is called <b>hybrid</b> because it mixes ideas from microkernel and monolithic systems.</p>')}
+  ${detail('User mode and kernel mode','<p>The CPU has two privilege levels. Applications run in <b>user mode</b> and cannot touch hardware. Core OS code and drivers run in <b>kernel mode</b> with full access. A system call moves from one to the other.</p>')}
+  ${detail('Windows services','<p>Services are background programs without a window, for example Windows Update, Print Spooler and Windows Defender. They are managed by the <b>Service Control Manager</b>. You can see them in <code>services.msc</code>.</p>')}
+  ${detail('File system','<p><b>NTFS</b> is the main file system. It supports large files, permissions (ACLs), encryption and journaling (recovery after a crash). Others: <b>ReFS</b> (servers), <b>exFAT</b> and <b>FAT32</b> (USB drives). Drives use letters such as C: and D:.</p>')}
+  ${detail('Process management','<p>A process contains one or more threads. Windows schedules <b>threads</b> using a priority-based, pre-emptive scheduler. Use <b>Task Manager</b> to see processes, CPU and memory.</p>')}
+  ${detail('Memory management','<p>Each process gets its own virtual address space. The <b>Memory Manager</b> uses paging and a <b>page file</b> on disk to extend RAM. Recently used pages of a process form its <b>working set</b>.</p>')}
+  ${detail('Security','<p>Users sign in with a password, PIN or biometrics. Features include <b>User Account Control (UAC)</b>, <b>Windows Security (Defender)</b>, <b>BitLocker</b> disk encryption, <b>Secure Boot</b> and access control lists on files.</p>')}
+  ${detail('Device management','<p>The <b>Plug and Play manager</b> detects new hardware and loads a driver. The <b>I/O Manager</b> sends requests to drivers. You can see devices in <b>Device Manager</b>.</p>')}
+  ${sec('User Mode vs Kernel Mode')}
+  ${cmpTable(['Feature','User Mode','Kernel Mode'],[['Who runs here','Applications, services, subsystem DLLs','Executive, kernel, drivers, HAL'],['Hardware access','Not allowed directly','Full access'],['Memory access','Only its own process memory','Can access all memory'],['If something crashes','Only that program stops','Whole system may crash (blue screen)'],['Speed','Slightly slower for OS work (needs system calls)','Fastest'],['Example','Notepad, Chrome','A graphics or disk driver']],'User mode versus kernel mode')}`;
+}});
+
+/* ---- Chapter 9: macOS ---- */
+CFG.macarch={w:700,gap:20,role:'Layer',label:'macOS architecture',cap:'macOS from applications down to hardware.',hint:'Click a layer.',layers:[
+ {t:'Applications',n:1,h:44,info:'Safari, Pages, Xcode, and apps from the App Store.'},
+ {t:'Cocoa / Frameworks',n:3,h:44,info:'Ready-made building blocks for apps: AppKit (windows, buttons), Foundation (data), Metal (graphics), and many more. They give every Mac app a consistent look.'},
+ {t:'DARWIN (open-source UNIX core)',n:2,subs:['BSD tools &\nlibraries','launchd\n(starts services)','Core\nservices'],subH:100,info:'<b>Darwin</b> is the open-source, UNIX-based foundation of macOS (and of iOS). It includes the XNU kernel, BSD command-line tools and low-level services.'},
+ {t:'XNU KERNEL',n:5,subs:['Mach\n(scheduling, IPC,\nmemory)','BSD\n(POSIX, files,\nnetwork)','I/O Kit\n(drivers)'],subH:112,info:'XNU means "X is Not Unix". It combines <b>Mach</b> (a microkernel heritage: threads, memory, messages), the <b>BSD</b> layer (UNIX API, file systems, networking, users) and <b>I/O Kit</b> (object-oriented driver framework). Because they all run in one kernel space, XNU is called a <b>hybrid kernel</b>.'},
+ {t:'Hardware (Apple silicon / Intel)',n:0,h:44,info:'Apple designs the chip, the hardware and the OS together on modern Macs.'}]};
+CH.push({id:'macos',title:'Case Study: macOS',short:'macOS',render(){
+  return `${chHead('Chapter 9 · Case Study','macOS','Apple\'s desktop operating system, built on a UNIX foundation.')}
+  <div class="callout"><span class="lab">Start with a simple example</span><p>Think of a smartphone-style "closed shop" where one company designs the hardware, the OS and the main apps together. They fit each other very well, much like a key made for one lock.</p></div>
+  ${sec('Architecture diagram')}
+  ${widget('stackinfo','macarch')}
+  ${concept({id:'macos-os',badge:'MC',title:'macOS',
+   def:'<b>macOS</b> is the proprietary operating system of Apple Mac computers. It is built on <b>Darwin</b>, a UNIX-based core, and uses the <b>XNU</b> kernel.',
+   why:'Apple wanted the reliability and power of UNIX together with a polished graphical interface and tight integration with its own hardware.',
+   how:'Apps use frameworks such as Cocoa. These call into Darwin and the XNU kernel, which manages processes, memory, files and devices on Apple hardware.',
+   diagram:'',
+   real:'A custom-tailored suit: the cloth (OS) and the tailor (hardware) work together, so the fit is neat, but you cannot easily swap parts.',
+   comp:'A MacBook runs macOS. You plug in an iPhone, and AirDrop, iCloud and Continuity work together smoothly.',
+   adv:['Smooth hardware and software integration','UNIX foundation with a friendly interface','Strong security features and privacy tools','Good for creative and development work'],
+   dis:['Runs only on Apple hardware','Fewer hardware choices, higher cost','Smaller game library','Less customisation than Linux'],
+   pts:['macOS is a certified UNIX system.','Darwin is open source; the macOS interface is not.','Default file system: <b>APFS</b>.','GUI: Aqua, with the Dock and menu bar.'],
+   exam:'<b>macOS</b> is a UNIX-based operating system by Apple, built on the Darwin core with the hybrid XNU kernel (Mach + BSD + I/O Kit).'})}
+  ${sec('Topic by topic')}
+  ${detail('What is macOS? and its relationship with UNIX','<p>macOS is the operating system of the Mac. It is based on <b>BSD UNIX</b> ideas and is officially certified as UNIX. That is why the Terminal on a Mac feels like Linux: commands such as <code>ls</code>, <code>cd</code> and <code>ps</code> work the same way.</p>',true)}
+  ${detail('Darwin','<p><b>Darwin</b> is the open-source core of macOS. It contains the XNU kernel, BSD tools and system libraries. Apple also uses it as the base of iOS, iPadOS and watchOS.</p>')}
+  ${detail('XNU kernel (conceptually)',`${fig(720,170,bx(10,10,700,150,'',0,{})+txt(360,34,'XNU: X is Not Unix','ttl')+bx(30,50,200,90,'Mach\nthreads · memory\nmessages (IPC)',1,{sm:true})+bx(260,50,200,90,'BSD\nUNIX API · files\nnetwork · users',2,{sm:true})+bx(490,50,200,90,'I/O Kit\nobject-oriented\ndevice drivers',3,{sm:true}),'XNU combines three parts in one kernel.','XNU kernel parts')}<ul class="pts" style="margin-top:.6rem"><li><b>Mach components</b>: low-level scheduling, virtual memory and message passing</li><li><b>BSD components</b>: UNIX interface, file systems, networking, users and permissions</li><li><b>I/O Kit</b>: framework for writing device drivers</li></ul>`)}
+  ${detail('User space','<p>Programs run in user space. Background services are started and managed by <b>launchd</b>. Apps are bundles (.app) that use frameworks such as Cocoa.</p>')}
+  ${detail('Security','<p>Layers of protection include <b>Gatekeeper</b> (checks downloaded apps), <b>System Integrity Protection (SIP)</b> (protects system files), <b>app sandboxing</b>, <b>XProtect</b> (malware scanning), <b>FileVault</b> (disk encryption) and permission prompts for camera, microphone and files.</p>')}
+  ${detail('Memory management','<p>Virtual memory with paging, plus <b>memory compression</b>: macOS can squeeze rarely used pages in RAM before writing to disk. Apple silicon Macs use <b>unified memory</b> shared by CPU and GPU.</p>')}
+  ${detail('Process management','<p>The Mach layer schedules threads; the BSD layer provides POSIX processes with PIDs. <b>Grand Central Dispatch</b> helps apps spread work across CPU cores. Use <b>Activity Monitor</b> to view processes.</p>')}
+  ${detail('File system','<p><b>APFS</b> (Apple File System) is the default. It supports snapshots, encryption and fast copies. macOS can also read exFAT and FAT32 drives.</p>')}
+  ${detail('Hardware integration','<p>Because Apple designs the chips, the machine and the OS, features like power saving, sleep, Touch ID, AirDrop and Handoff work very smoothly together.</p>')}
+  ${detail('GUI','<p>The graphical interface is called <b>Aqua</b>: the Dock, menu bar, Finder and windows with smooth animation drawn by the Metal graphics framework.</p>')}`;
+}});
+
+/* ---- Chapter 10: comparison ---- */
+CH.push({id:'vs',title:'Linux vs Windows vs macOS',short:'Linux vs Windows vs macOS',render(){
+  return `${chHead('Chapter 10','Linux vs Windows vs macOS','A neutral comparison. No system is "best". The right choice depends on what you need.')}
+  ${cmpTable(['Feature','Linux','Windows','macOS'],[
+   ['Developer','Linux kernel: Linus Torvalds and a worldwide community. Distributions by many groups','Microsoft','Apple'],
+   ['Kernel','Linux kernel','Windows NT kernel','XNU kernel'],
+   ['Architecture','Monolithic kernel with loadable modules','Hybrid (user mode + kernel mode, Executive)','Hybrid (Mach + BSD + I/O Kit)'],
+   ['User interface','Many choices: GNOME, KDE, XFCE and others, plus a strong command line','Desktop with Start menu and taskbar','Aqua desktop with Dock and menu bar'],
+   ['Security model','Users and groups, file permissions, sudo, SELinux / AppArmor; code open to review','Accounts, ACLs, UAC, Windows Security, BitLocker, Secure Boot','Sandboxing, Gatekeeper, SIP, FileVault, notarisation'],
+   ['Software ecosystem','Package managers and repositories; huge open-source library','Largest range of commercial desktop software and games','App Store, professional creative tools, many UNIX tools'],
+   ['Customization','Very high','Medium','Lower, by design'],
+   ['Hardware relationship','Runs on a very wide range, from tiny devices to supercomputers','Runs on PCs from many makers','Designed for Apple\'s own hardware'],
+   ['Typical usage','Servers, cloud, supercomputers, developers, embedded devices, Android base','Office work, gaming, schools, business desktops','Creative work, development, personal use in the Apple ecosystem'],
+   ['Licensing model','Open source (kernel under GPL); most distributions are free','Proprietary, commercial licence, usually bundled with a PC','Proprietary, included with Apple hardware; Darwin core is open source'],
+   ['File systems','ext4, XFS, Btrfs (and can read many others)','NTFS, ReFS, exFAT, FAT32','APFS (also reads exFAT, FAT32)'],
+   ['Command-line environment','Bash, zsh and others in a Terminal','Command Prompt, PowerShell (and WSL to run Linux tools)','Terminal with zsh (bash also available)']
+  ],'Linux Windows macOS comparison')}
+  <div class="callout" style="margin-top:1rem"><span class="lab">Choosing an OS</span><p>A web hosting company may prefer Linux for cost and control. A school computer lab may choose Windows for software compatibility. A video editor may choose macOS for tools and hardware. Many people use <b>more than one</b>, and many students run Linux inside Windows with WSL. Ask: <b>what do I need to run, on what hardware, with what budget and skills?</b></p></div>`;
+}});
+
+/* ---- Chapter 11: mind map ---- */
+CH.push({id:'mindmap',title:'Complete OS Mind Map',short:'Mind Map',render(){
+  return `${chHead('Chapter 11','Complete Operating System Mind Map','The whole module on one page. Click a topic to jump to its section.')}
+  ${widget('mindmap','mm')}
+  <div class="callout" style="margin-top:1rem"><span class="lab">Classroom idea</span><p>Fold all branches, then ask students to name what is inside each branch before you open it.</p></div>`;
+}});
+
+/* ---- Chapter 12: glance ---- */
+CFG.glance={w:780,gap:22,role:'Part',label:'Operating system at a glance',cap:'The whole system, top to bottom.',hint:'Click any part of the picture.',layers:[
+ {t:'USER',n:5,h:42,info:'The person using the computer.'},
+ {t:'APPLICATIONS',n:1,h:42,info:'Browsers, editors, games. They ask the OS for services.'},
+ {t:'SYSTEM CALLS / APIs',n:3,h:42,info:'The controlled doorway between applications and the OS.'},
+ {t:'OPERATING SYSTEM',n:2,subs:['Process\nMgmt','Memory\nMgmt','File\nMgmt','I/O\nMgmt','Security','Networking','Resource\nMgmt'],subH:108,info:'The managers inside the OS. Process: schedules programs. Memory: shares RAM. File: stores data. I/O: drives devices. Security: protects. Networking: connects computers. Resource management: shares everything fairly.'},
+ {t:'HARDWARE',n:4,subs:['CPU','RAM','Storage','Input\nDevices','Output\nDevices'],subH:100,info:'CPU runs instructions, RAM holds running programs, storage keeps data, input devices send data in, output devices show results.'}]};
+CH.push({id:'glance',title:'OS at a Glance',short:'OS at a Glance',render(){
+  return `${chHead('Chapter 12','OS at a Glance','One visual summary of everything you learned.')}
+  ${widget('stackinfo','glance')}
+  <div class="grid3" style="margin-top:1rem">
+   <div class="callout"><span class="lab">Goals</span><p>Convenience, efficiency, resource management, security, reliability, evolution.</p></div>
+   <div class="callout comp"><span class="lab">Types</span><p>Multiprogramming, time-sharing, real-time, multithreading, distributed, embedded.</p></div>
+   <div class="callout real"><span class="lab">Structures</span><p>Layered, monolithic, microkernel (and hybrids).</p></div></div>`;
+}});
+/* ========== glossary, tips, flashcards, quiz ========== */
+const GLOSSARY=[
+ {t:'Kernel',d:'The core part of the operating system. It runs in kernel mode and controls the CPU, memory and devices.'},
+ {t:'Process',d:'A program that is running. It has its own memory, files and at least one thread.'},
+ {t:'Thread',d:'The smallest unit of work the CPU can run. Threads of one process share its memory but have their own stack and registers.'},
+ {t:'System Call',d:'A request from a program to the kernel to do something that needs special rights, such as reading a file.'},
+ {t:'Scheduler',d:'The part of the OS that decides which process or thread uses the CPU next, and for how long.'},
+ {t:'Context Switch',d:'Saving the state of the running process and loading the state of another, so the CPU can change tasks.'},
+ {t:'Deadlock',d:'A stuck situation in which processes wait for each other\'s resources forever, so none can continue.'},
+ {t:'Virtual Memory',d:'A technique that gives each process its own large address space by using disk space to extend RAM.'},
+ {t:'File System',d:'The method the OS uses to name, store and organise files on a disk. Examples: ext4, NTFS, APFS.'},
+ {t:'Device Driver',d:'A small program that lets the OS talk to one kind of hardware, such as a printer or graphics card.'},
+ {t:'Shell',d:'A program that takes the user\'s commands and passes them to the OS. It can be text-based or graphical.'},
+ {t:'GUI',d:'Graphical User Interface. Windows, icons, menus and a pointer, as on a desktop.'},
+ {t:'CLI',d:'Command Line Interface. You type commands as text, for example in a terminal.'},
+ {t:'IPC',d:'Inter-Process Communication. Ways for processes to exchange data, such as pipes, shared memory and messages.'},
+ {t:'RTOS',d:'Real-Time Operating System. An OS that guarantees to respond to events within a fixed time limit.'},
+ {t:'Microkernel',d:'A very small kernel with only basic services. Other services run in user space.'},
+ {t:'Monolithic Kernel',d:'A kernel in which all main OS services run together in one large program in kernel mode.'},
+ {t:'Multitasking',d:'Running several tasks at the same time, or switching so fast that they seem to run together.'},
+ {t:'Multiprogramming',d:'Keeping several programs in memory so the CPU can switch to another when one waits for I/O.'},
+ {t:'System Software',d:'Software that runs and manages the computer itself, such as the operating system and device drivers.'},
+ {t:'Hardware',d:'The physical parts of a computer: CPU, memory, disk, keyboard, screen and so on.'},
+ {t:'RAM',d:'Random Access Memory. Fast temporary memory that holds the programs and data being used right now.'},
+ {t:'Kernel Mode',d:'A privileged CPU mode in which code can use all hardware and memory. Used by the OS core and drivers.'},
+ {t:'User Mode',d:'A restricted CPU mode in which applications run. They must use system calls to reach hardware.'},
+ {t:'Time Slice',d:'A very short period of CPU time given to one process before the scheduler gives it to another. Also called a quantum.'},
+ {t:'Distributed OS',d:'An OS that controls many networked computers and makes them look like a single system.'},
+ {t:'Embedded OS',d:'A small OS built into a dedicated device such as a TV, router or washing machine.'}
+];
+const TIPS_EXTRA=[
+ {t:'Latency',d:'The delay between a request and the start of the response.'},
+ {t:'Throughput',d:'The amount of work completed in a given time.'}
+];
+const FLASH=[
+ {q:'What is an Operating System?',a:'System software that acts as an interface between the user/applications and the computer hardware, and manages resources.'},
+ {q:'Name the six fundamental goals of an OS.',a:'Convenience, efficiency, resource management, security and protection, reliability, and ability to evolve.'},
+ {q:'List the OS services.',a:'Program execution, I/O operations, file-system manipulation, communication, error detection, resource allocation, protection and security, accounting.'},
+ {q:'What is multiprogramming?',a:'Keeping several programs in memory so the CPU switches to another program when one waits for I/O. Goal: higher CPU utilization.'},
+ {q:'What is a time-sharing OS?',a:'An OS that divides CPU time into small time slices so many users get quick, interactive responses.'},
+ {q:'What is a real-time OS?',a:'An OS that must respond within a defined time limit. Hard: deadline must be met. Soft: occasional delay is acceptable.'},
+ {q:'What is a multithreading OS?',a:'An OS in which one process can contain several threads that share memory and run concurrently.'},
+ {q:'What is a distributed OS?',a:'An OS that manages many networked computers and makes them appear as one system. Gives resource sharing, load balancing and fault tolerance.'},
+ {q:'What is an embedded OS?',a:'A small OS built for one dedicated device, such as a smart TV, router, ATM or washing machine.'},
+ {q:'What is a layered OS?',a:'An OS built as a stack of layers; each layer uses only the services of the layer below. Easy to debug but has overhead.'},
+ {q:'What is a monolithic OS?',a:'An OS where all main services run inside one large kernel. Very fast, but a kernel failure can affect everything. Example: Linux.'},
+ {q:'What is a microkernel?',a:'A minimal kernel (IPC, scheduling, basic memory). Other services run in user space. More reliable, with message-passing overhead.'},
+ {q:'What is Linux?',a:'A free, open-source, UNIX-like OS. Linux is the kernel (by Linus Torvalds, 1991); with GNU tools it forms a full system. Monolithic and modular.'},
+ {q:'What is Windows\' architecture in short?',a:'Built on the NT kernel (hybrid). User mode (apps, services) is separated from kernel mode (Executive, kernel, drivers, HAL).'},
+ {q:'What is macOS built on?',a:'Darwin, an open-source UNIX-based core, with the XNU hybrid kernel made of Mach, BSD and I/O Kit.'}
+];
+/* mk(): puts the right answer at a varying position */
+const QUIZ=[];
+(function(){
+  const add=(q,right,wrong,e)=>{const i=QUIZ.length,pos=(i*3+1)%4,o=wrong.slice();o.splice(pos,0,right);QUIZ.push({q,o,a:pos,e})};
+  add('Which statement best describes an operating system?','System software that acts as an interface between users/applications and hardware',['A program that only edits documents','A physical part of the CPU','A type of computer network'],'An OS is system software that sits between applications and hardware and manages resources.');
+  add('Which of these is NOT a fundamental goal of an operating system?','Making hardware more expensive',['Convenience','Efficiency','Reliability'],'The six goals are convenience, efficiency, resource management, security, reliability and ability to evolve.');
+  add('Which OS service loads a program into memory and starts it?','Program execution',['Accounting','Error detection','File-system manipulation'],'Program execution loads the program, starts it and handles its termination.');
+  add('When you press Print, which service lets the program use the printer?','I/O operations',['Accounting','Communication','Protection'],'Programs cannot control devices directly; the OS performs I/O through device drivers.');
+  add('Which OS service keeps records of how much CPU time each user has used?','Accounting',['Program execution','Error detection','Communication'],'Accounting tracks resource use by users and programs.');
+  add('What is the purpose of a system call?','To let a program request a service from the kernel',['To format the hard disk','To increase the CPU speed','To connect to a telephone'],'A system call is the controlled way a user program asks the kernel for a service.');
+  add('What is the main aim of a multiprogramming OS?','Keep the CPU busy by switching programs when one waits for I/O',['Give every user exactly one minute of CPU time','Respond to events within a deadline','Join many computers into one system'],'Multiprogramming improves CPU utilization by always having another ready program.');
+  add('A very short period of CPU time given to a process in a time-sharing system is called a:','Time slice (quantum)',['Deadline','Thread','Page'],'The time slice or quantum is the fixed short time each process gets before the scheduler switches.');
+  add('Saving the state of one process and loading the state of another is called:','Context switching',['Booting','Paging','Compiling'],'A context switch saves and restores process state so the CPU can change tasks.');
+  add('What is the main benefit of a time-sharing OS?','Quick, interactive response for many users',['Guaranteed deadlines for every task','No need for a scheduler','Lower memory use than any other OS'],'Small time slices make each user feel the computer is responding just for them.');
+  add('Which is an example of a hard real-time system?','A car airbag controller',['A video call','A music player','A word processor'],'If an airbag fires late, the failure is serious. That is hard real-time.');
+  add('Which is an example of a soft real-time system?','Streaming video',['A pacemaker','An aircraft flight controller','An industrial robot arm safety stop'],'A late video frame lowers quality but does not cause a disaster.');
+  add('"Real-time" in an RTOS mainly means:','Responding within a guaranteed time limit',['Running the fastest CPU available','Showing the real clock time on the screen','Using no memory'],'Real-time is about predictable, deadline-bound response, not just speed.');
+  add('Threads belonging to the same process share:','Code, data and open files',['Their stacks and registers','Nothing at all','Only the CPU registers'],'Threads share the process memory and resources, but each has its own stack and registers.');
+  add('Compared with creating a process, creating a thread is generally:','Cheaper and faster',['More expensive and slower','Impossible in modern systems','Exactly the same cost'],'Threads are lightweight because they share the process address space.');
+  add('A distributed operating system makes many networked computers appear as:','One single system',['Many unrelated systems','A single CPU only','A printer'],'The user sees one system even though several computers do the work.');
+  add('Fault tolerance in a distributed OS means:','The system keeps working if one machine fails',['Every machine must have the same CPU','Errors are never possible','All users share one password'],'Work can be moved to other machines when one fails.');
+  add('Which device most likely uses an embedded operating system?','A washing machine controller',['A cloud server farm','A graphics workstation with 64 GB RAM','A supercomputer cluster'],'Embedded OSs are small systems built into dedicated devices.');
+  add('In a layered operating system, each layer uses the services of:','The layer directly below it',['Any layer above it','Only the hardware directly','No other layer'],'Each layer is built on lower layers and offers services to higher layers.');
+  add('A disadvantage of the layered structure is:','Performance overhead because requests pass through many layers',['It cannot be tested','It has no hardware layer','It always crashes the whole system'],'Each layer adds a little delay, and defining the layers can be difficult.');
+  add('In a monolithic OS:','All major services run inside one large kernel',['Only IPC and scheduling run in the kernel','Every service runs in its own computer','There is no kernel'],'Monolithic kernels put process, memory, file, driver and network code together in kernel space.');
+  add('Which description fits the Linux kernel?','Monolithic with loadable modules',['A pure microkernel','A layered kernel with exactly six layers','An embedded-only kernel'],'Linux is monolithic, but modules can be loaded and unloaded at run time.');
+  add('Which services stay inside a microkernel?','IPC, CPU scheduling and basic memory management',['File system, drivers and networking','Only the web browser','All applications'],'Only the most essential services stay in the microkernel.');
+  add('A main disadvantage of a microkernel is:','Message-passing (communication) overhead',['It has no memory management','It cannot run drivers at all','It needs no hardware'],'Services communicate by messages, which costs extra time and context switches.');
+  add('If a user-space disk driver crashes in a microkernel system, what usually happens?','Only that server fails and it can be restarted',['The whole computer always crashes','All files are deleted','The kernel is replaced'],'User-space servers are isolated from the kernel.');
+  add('Who started the Linux kernel in 1991?','Linus Torvalds',['Bill Gates','Steve Jobs','Dennis Ritchie'],'Linus Torvalds created the Linux kernel in 1991.');
+  add('In the Linux file system, the top of the directory tree is called:','The root directory, written /',['The C: drive','The desktop','The registry'],'Linux has one tree starting at / with no drive letters.');
+  add('Which Linux command lists the files in a folder?','ls',['pwd','mkdir','top'],'ls lists files and folders. pwd shows the current folder.');
+  add('Which Linux command shows the current working directory?','pwd',['cat','cp','ps'],'pwd means "print working directory".');
+  add('Modern Windows is built on which kernel?','The Windows NT kernel',['The Linux kernel','The XNU kernel','The MINIX kernel'],'Windows 11 and Windows Server are based on the NT kernel.');
+  add('In Windows, device drivers and the HAL run in:','Kernel mode',['User mode','Safe mode only','No particular mode'],'Drivers and the HAL are part of kernel mode, so a faulty driver can crash Windows.');
+  add('The XNU kernel of macOS combines:','Mach, BSD and I/O Kit',['Linux, GNU and X11','NT, Win32 and HAL','MINIX, QNX and L4'],'XNU = Mach + BSD + I/O Kit.');
+  add('What is the default file system on modern Macs?','APFS',['NTFS','ext4','FAT12'],'Apple File System (APFS) is the default on current macOS.');
+  add('Darwin is best described as:','The open-source UNIX-based core of macOS',['A Linux distribution','The macOS desktop theme','A Windows service'],'Darwin includes the XNU kernel and BSD tools and is open source.');
+  add('Which statement about comparing Linux, Windows and macOS is most accurate?','Which is suitable depends on the requirements of the user',['One of them is best for every purpose','Only Linux has a kernel','Only macOS has security features'],'Each has strengths; the right choice depends on software, hardware, cost and skills.');
+})();
+/* ---- Chapters 13–17 ---- */
+CH.push({id:'cards',title:'Quick Revision',short:'Quick Revision',render(){
+  return `${chHead('Chapter 13','Quick Revision','Fifteen flash cards. Read the question, say your answer aloud, then click to check.')}${widget('flash','fc')}`;
+}});
+CH.push({id:'quiz',title:'MCQ Quiz',short:'MCQ Quiz',render(){
+  return `${chHead('Chapter 14','MCQ Quiz',`${QUIZ.length} questions covering the whole module. Choose an answer to see the explanation straight away.`)}${widget('quiz','qz')}`;
+}});
+CH.push({id:'diffs',title:'Important Differences',short:'Differences',render(){
+  const card=(t,h,rows)=>`<div class="stack"><h3>${t}</h3>${cmpTable(h,rows,t)}</div>`;
+  return `${chHead('Chapter 15','Important Differences','The comparisons that are asked most often in exams.')}
+  <div class="stack" style="gap:2rem">
+  ${card('Multiprogramming vs Time Sharing',['Point','Multiprogramming','Time Sharing'],[['Main aim','Maximise CPU utilization','Quick response for many users'],['When the CPU switches','When a program waits for I/O','When a timer ends the time slice'],['Time slice','Not required','Required'],['Interaction','Little or none','Highly interactive'],['Example','Batch mainframe systems','Unix / Linux multi-user servers']])}
+  ${card('Process vs Thread',['Point','Process','Thread'],[['Memory','Separate','Shared with its process'],['Creation cost','Higher','Lower'],['Communication','IPC required','Shared memory'],['If one fails','Others usually survive','May crash the whole process'],['Context switch','Slower','Faster']])}
+  ${card('Hard Real-Time vs Soft Real-Time',['Point','Hard real-time','Soft real-time'],[['Deadline','Must always be met','Important, but a miss is tolerated'],['Result of missing it','Failure or danger','Lower quality'],['Examples','Airbag, pacemaker, flight control','Video streaming, online games'],['Design cost','Very high','Moderate']])}
+  ${card('Monolithic vs Microkernel',['Point','Monolithic kernel','Microkernel'],[['Kernel size','Large','Very small'],['Speed','Faster (direct calls)','Slower (messages)'],['Reliability','A kernel bug can crash everything','Failure of a server is contained'],['Drivers run in','Kernel mode','User space'],['Example','Linux','MINIX 3, QNX']])}
+  ${card('User Mode vs Kernel Mode',['Point','User mode','Kernel mode'],[['Used by','Applications','OS core and drivers'],['Hardware access','Not allowed directly','Full'],['Crash effect','One program stops','Whole system may stop'],['How to enter OS','System call','Already inside']])}
+  ${card('Linux vs Windows vs macOS',['Point','Linux','Windows','macOS'],[['Kernel','Linux (monolithic, modular)','NT (hybrid)','XNU (hybrid)'],['Licence','Open source','Proprietary','Proprietary'],['Common strength','Servers and flexibility','Software and games range','Hardware integration'],['Default file system','ext4 (many distros)','NTFS','APFS']])}
+  </div>
+  <div class="callout" style="margin-top:1rem"><span class="lab">Remember</span><p>The last comparison is not a ranking. Each system fits different needs.</p></div>`;
+}});
+CH.push({id:'glossary',title:'Glossary',short:'Glossary',render(){
+  return `${chHead('Chapter 16','Glossary','Simple meanings of the key terms. Type to search.')}${widget('glossary','gl')}`;
+}});
+const OUTCOMES=['Define Operating System.','Explain fundamental OS goals.','Explain OS services.','Differentiate major OS types.','Explain Layered, Monolithic and Microkernel structures.','Describe Linux architecture.','Describe Windows architecture.','Describe macOS architecture.','Compare different OS architectures.','Explain OS concepts using real-world examples.'];
+CH.push({id:'summary',title:'Final Learning Summary',short:'Final Summary',render(){
+  const done=store.get('outcomes',[]);
+  return `${chHead('Chapter 17','Final Learning Summary','After completing this module, students should be able to:')}
+  <div class="card"><ol style="list-style:none;margin:0;padding:0;display:grid;gap:.6rem">${OUTCOMES.map((o,i)=>`<li><label style="display:flex;gap:.7rem;align-items:flex-start;font-size:1.1rem"><input type="checkbox" data-o="${i}" ${done.includes(i)?'checked':''} style="width:1.3rem;height:1.3rem;margin-top:.2rem;accent-color:var(--h6)"><span>${o}</span></label></li>`).join('')}</ol><p class="chip" id="oc" style="margin-top:1rem"></p></div>
+  <div class="grid3" style="margin-top:1rem"><div class="callout"><span class="lab">Remember</span><p>An OS is the manager between users, programs and hardware.</p></div><div class="callout comp"><span class="lab">Remember</span><p>Types describe how the OS runs programs. Structures describe how the OS is built.</p></div><div class="callout real"><span class="lab">Remember</span><p>Linux, Windows and macOS each make different design choices for different needs.</p></div></div>
+  <div class="row" style="margin-top:1.2rem"><button class="btn" data-go="quiz">Take the quiz again</button><button class="btn ghost" data-go="cards">Revise with flash cards</button><button class="btn ghost" data-go="intro">Back to start</button></div>`;
+}});
+
+/* ========== app logic ========== */
+const main=$('#main'),toc=$('#toc');
+let curIdx=0,printing=false;
+const seen=new Set(store.get('seen',[]));
+const TEXTX={cards:()=>FLASH.map(f=>f.q+' '+f.a).join(' '),quiz:()=>QUIZ.map(q=>q.q+' '+q.o.join(' ')+' '+q.e).join(' '),glossary:()=>GLOSSARY.map(g=>g.t+' '+g.d).join(' ')};
+toc.innerHTML=CH.map((c,i)=>`<li data-id="${c.id}"><button data-id="${c.id}"><span class="n">${i+1}</span><span>${c.short}</span></button></li>`).join('');
+function initWidgets(root){$$('[data-widget]',root).forEach(el=>{try{WIDGETS[el.dataset.widget]?.(el)}catch(e){console.error('widget',el.dataset.widget,e)}})}
+function navHtml(i){
+  const p=CH[i-1],n=CH[i+1];
+  return `<nav class="chnav" aria-label="Chapter navigation">${p?`<button data-go="${p.id}" class="prev"><small>← Previous</small><b>${p.title}</b></button>`:'<span></span>'}${n?`<button data-go="${n.id}" class="next"><small>Next →</small><b>${n.title}</b></button>`:''}</nav>`;
+}
+function updateProgress(){
+  const n=CH.length,s=seen.size,pct=Math.round(100*s/n);
+  $('#pbar').style.width=pct+'%';$('#pbarWrap').setAttribute('aria-valuenow',pct);
+  $('#ptxt').textContent=`${s} of ${n} chapters (${pct}%)`;
+  $$('#toc li').forEach(li=>li.classList.toggle('seen',seen.has(li.dataset.id)));
+}
+function show(id,anchor,quiet){
+  const i=CH.findIndex(c=>c.id===id);if(i<0)return;
+  curIdx=i;const c=CH[i];
+  main.innerHTML=`<article class="chapter" id="ch-${c.id}" aria-label="${esc(c.title)}">${tipify(c.render())}${navHtml(i)}</article>`;
+  initWidgets(main);
+  $$('#toc button').forEach(b=>b.removeAttribute('aria-current'));
+  $(`#toc button[data-id="${id}"]`).setAttribute('aria-current','page');
+  seen.add(id);store.set('seen',[...seen]);updateProgress();
+  try{history.replaceState(null,'','#'+id)}catch(e){}
+  document.title='OS Fundamentals · '+c.short;
+  closeMenu();
+  if(!quiet){
+    const t=anchor&&document.getElementById(anchor);
+    if(t){setTimeout(()=>t.scrollIntoView({behavior:'smooth',block:'start'}),60)}
+    else window.scrollTo({top:0,behavior:'instant'in window?'instant':'auto'});
+    if(!t)main.focus({preventScroll:true});
+  }
+  const o=$('#oc');if(o){const upd=()=>{const d=$$('[data-o]',main).filter(x=>x.checked).length;o.textContent=`${d} of ${OUTCOMES.length} outcomes ticked`;store.set('outcomes',$$('[data-o]',main).map((x,k)=>x.checked?k:-1).filter(k=>k>=0))};main.addEventListener('change',e=>{if(e.target.matches('[data-o]'))upd()});upd()}
+}
+function go(ch,an){show(ch,an||null)}
+
+/* menu */
+function closeMenu(){$('#side').classList.remove('open');$('#scrim').classList.remove('open');$('#menuBtn').setAttribute('aria-expanded','false')}
+$('#menuBtn').addEventListener('click',()=>{const o=$('#side').classList.toggle('open');$('#scrim').classList.toggle('open',o);$('#menuBtn').setAttribute('aria-expanded',o)});
+$('#scrim').addEventListener('click',closeMenu);
+toc.addEventListener('click',e=>{const b=e.target.closest('button[data-id]');if(b)show(b.dataset.id)});
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]');
+  if(g&&!g.closest('#toc')){e.preventDefault();show(g.dataset.go,g.dataset.an||null)}
+});
+
+/* theme and font size */
+const root=document.documentElement;
+function effTheme(){return root.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}
+const savedTheme=store.get('theme',null);if(savedTheme)root.dataset.theme=savedTheme;
+$('#themeBtn').addEventListener('click',()=>{const t=effTheme()==='dark'?'light':'dark';root.dataset.theme=t;store.set('theme',t)});
+let fs=store.get('fs',1);const setFs=v=>{fs=Math.min(1.6,Math.max(.85,Math.round(v*100)/100));root.style.setProperty('--fs',fs);store.set('fs',fs)};setFs(fs);
+$('#fsUp').addEventListener('click',()=>setFs(fs+.1));$('#fsDown').addEventListener('click',()=>setFs(fs-.1));
+
+/* back to top */
+const toTop=$('#toTop');
+addEventListener('scroll',()=>toTop.classList.toggle('show',scrollY>600),{passive:true});
+toTop.addEventListener('click',()=>scrollTo({top:0,behavior:'smooth'}));
+
+/* tooltips */
+const tipbox=$('#tipbox');
+function showTip(t){
+  tipbox.textContent=t.dataset.tip;tipbox.hidden=false;
+  const r=t.getBoundingClientRect(),b=tipbox.getBoundingClientRect();
+  let x=r.left+r.width/2-b.width/2;x=Math.max(8,Math.min(x,innerWidth-b.width-8));
+  let y=r.bottom+8;if(y+b.height>innerHeight-8)y=r.top-b.height-8;
+  tipbox.style.left=x+'px';tipbox.style.top=Math.max(8,y)+'px';
+}
+document.addEventListener('mouseover',e=>{const t=e.target.closest?.('.tip');if(t)showTip(t)});
+document.addEventListener('mouseout',e=>{if(e.target.closest?.('.tip'))tipbox.hidden=true});
+document.addEventListener('focusin',e=>{const t=e.target.closest?.('.tip');if(t)showTip(t)});
+document.addEventListener('focusout',e=>{if(e.target.closest?.('.tip'))tipbox.hidden=true});
+document.addEventListener('click',e=>{const t=e.target.closest?.('.tip');if(t)showTip(t);else tipbox.hidden=true});
+
+/* search */
+let INDEX=null;
+function buildIndex(){
+  INDEX=CH.map(c=>{
+    const d=document.createElement('div');d.innerHTML=tipify(c.render());
+    let t=d.textContent.replace(/\s+/g,' ');if(TEXTX[c.id])t+=' '+TEXTX[c.id]();
+    return {c,t,l:t.toLowerCase()};
+  });
+}
+const qIn=$('#q'),resBox=$('#results');let qTimer;
+function doSearch(){
+  const q=qIn.value.trim().toLowerCase();
+  if(q.length<2){resBox.hidden=true;return}
+  if(!INDEX)buildIndex();
+  const terms=q.split(/\s+/);
+  const hits=INDEX.filter(x=>terms.every(t=>x.l.includes(t)));
+  resBox.innerHTML=hits.length?hits.slice(0,12).map(h=>{
+    const p=h.l.indexOf(terms[0]),s=h.t.slice(Math.max(0,p-50),p+90);
+    return `<button role="option" data-id="${h.c.id}"><b>${h.c.title}</b><span>…${esc(s)}…</span></button>`;
+  }).join(''):'<p style="padding:.6rem .8rem;margin:0">No topic matches. Try a shorter word.</p>';
+  resBox.hidden=false;
+}
+qIn.addEventListener('input',()=>{clearTimeout(qTimer);qTimer=setTimeout(doSearch,150)});
+resBox.addEventListener('click',e=>{
+  const b=e.target.closest('button[data-id]');if(!b)return;
+  const q=qIn.value.trim();show(b.dataset.id);resBox.hidden=true;setTimeout(()=>highlight(q),120);
+});
+function highlight(q){
+  const term=q.toLowerCase().split(/\s+/)[0];if(!term)return;
+  const w=document.createTreeWalker(main,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.parentElement.closest('script,style,svg,button,.term')?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT});
+  const hits=[];let n;while(n=w.nextNode()){if(n.nodeValue.toLowerCase().includes(term))hits.push(n);if(hits.length>40)break}
+  let first=null;
+  hits.forEach(n=>{
+    const v=n.nodeValue,l=v.toLowerCase(),i=l.indexOf(term);if(i<0)return;
+    const m=document.createElement('mark');m.textContent=v.slice(i,i+term.length);
+    const after=n.splitText(i);after.nodeValue=after.nodeValue.slice(term.length);
+    n.parentNode.insertBefore(m,after);if(!first)first=m;
+    const d=n.parentElement.closest('details');if(d)d.open=true;
+  });
+  if(first)first.scrollIntoView({block:'center',behavior:'smooth'});
+}
+document.addEventListener('click',e=>{if(!e.target.closest('.search'))resBox.hidden=true});
+
+/* keyboard */
+document.addEventListener('keydown',e=>{
+  const typing=/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)||e.target.isContentEditable;
+  if(e.key==='Escape'){resBox.hidden=true;closeMenu();tipbox.hidden=true;return}
+  if(typing||e.ctrlKey||e.metaKey||e.altKey)return;
+  if(e.key==='/'){e.preventDefault();qIn.focus();return}
+  if(e.key==='ArrowRight'&&curIdx<CH.length-1)show(CH[curIdx+1].id);
+  if(e.key==='ArrowLeft'&&curIdx>0)show(CH[curIdx-1].id);
+});
+
+/* print: render every chapter */
+addEventListener('beforeprint',()=>{
+  printing=true;
+  main.innerHTML=CH.map(c=>`<article class="chapter">${tipify(c.render())}</article>`).join('');
+  initWidgets(main);$$('details',main).forEach(d=>d.open=true);
+});
+addEventListener('afterprint',()=>{if(printing){printing=false;show(CH[curIdx].id,null,true)}});
+
+/* start */
+(function(){
+  const h=location.hash.slice(1);
+  show(CH.some(c=>c.id===h)?h:'intro',null,true);
+  addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(CH.some(c=>c.id===h)&&CH[curIdx].id!==h)show(h)});
+})();
+</script>
+
+</body></html>
